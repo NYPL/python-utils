@@ -1,15 +1,15 @@
-import psycopg2
+import psycopg
 
 from nypl_py_utils.functions.log_helper import create_log
 
 
-class PgClient:
+class PostgreSQLClient:
     """
-    Client for managing connections to a PostgreSQL database (such as Sierra).
+    Client for managing connections to a PostgreSQL database (such as Sierra)
     """
 
     def __init__(self, host, port, db_name, user, password):
-        self.logger = create_log('pg_client')
+        self.logger = create_log('postgresql_client')
         self.conn = None
         self.host = host
         self.port = port
@@ -21,17 +21,17 @@ class PgClient:
         """Connects to a PostgreSQL database using the given credentials"""
         self.logger.info('Connecting to {} database'.format(self.db_name))
         try:
-            self.conn = psycopg2.connect(
+            self.conn = psycopg.connect(
                 host=self.host,
                 port=self.port,
                 dbname=self.db_name,
                 user=self.user,
                 password=self.password)
-        except psycopg2.OperationalError as e:
+        except psycopg.Error as e:
             self.logger.error(
                 'Error connecting to {name} database: {error}'.format(
                     name=self.db_name, error=e))
-            raise PgClientError(
+            raise PostgreSQLClientError(
                 'Error connecting to {name} database: {error}'.format(
                     name=self.db_name, error=e)) from None
 
@@ -46,14 +46,13 @@ class PgClient:
         self.logger.debug('Executing query {}'.format(query))
         try:
             cursor = self.conn.cursor()
-            cursor.execute(query)
-            return cursor.fetchall()
+            return cursor.execute(query).fetchall()
         except Exception as e:
             self.conn.rollback()
             self.logger.error(
                 ('Error executing {name} database query \'{query}\': {error}')
                 .format(name=self.db_name, query=query, error=e))
-            raise PgClientError(
+            raise PostgreSQLClientError(
                 ('Error executing {name} database query \'{query}\': {error}')
                 .format(name=self.db_name, query=query, error=e)) from None
         finally:
@@ -66,6 +65,6 @@ class PgClient:
         self.conn.close()
 
 
-class PgClientError(Exception):
+class PostgreSQLClientError(Exception):
     def __init__(self, message=None):
         self.message = message
