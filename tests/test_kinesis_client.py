@@ -3,13 +3,13 @@ import pytest
 from freezegun import freeze_time
 from nypl_py_utils import KinesisClient, KinesisClientError
 
-_DATETIME_KEY = '1672531200000000000'
-_MOCK_KINESIS_RECORDS = [
-    {'Data': b'a', 'PartitionKey': _DATETIME_KEY},
-    {'Data': b'b', 'PartitionKey': _DATETIME_KEY},
-    {'Data': b'c', 'PartitionKey': _DATETIME_KEY},
-    {'Data': b'd', 'PartitionKey': _DATETIME_KEY},
-    {'Data': b'e', 'PartitionKey': _DATETIME_KEY}
+_TEST_DATETIME_KEY = '1672531200000000000'
+_TEST_KINESIS_RECORDS = [
+    {'Data': b'a', 'PartitionKey': _TEST_DATETIME_KEY},
+    {'Data': b'b', 'PartitionKey': _TEST_DATETIME_KEY},
+    {'Data': b'c', 'PartitionKey': _TEST_DATETIME_KEY},
+    {'Data': b'd', 'PartitionKey': _TEST_DATETIME_KEY},
+    {'Data': b'e', 'PartitionKey': _TEST_DATETIME_KEY}
 ]
 
 
@@ -28,19 +28,19 @@ class TestKinesisClient:
 
         test_instance.send_records(MOCK_RECORDS)
         mocked_send_method.assert_has_calls([
-            mocker.call([_MOCK_KINESIS_RECORDS[0],
-                        _MOCK_KINESIS_RECORDS[1]], 1),
-            mocker.call([_MOCK_KINESIS_RECORDS[2],
-                        _MOCK_KINESIS_RECORDS[3]], 1),
-            mocker.call([_MOCK_KINESIS_RECORDS[4]], 1)])
+            mocker.call([_TEST_KINESIS_RECORDS[0],
+                        _TEST_KINESIS_RECORDS[1]], 1),
+            mocker.call([_TEST_KINESIS_RECORDS[2],
+                        _TEST_KINESIS_RECORDS[3]], 1),
+            mocker.call([_TEST_KINESIS_RECORDS[4]], 1)])
 
-    def test_send_kinesis_format_records_success(self, test_instance):
+    def test_send_kinesis_format_records(self, test_instance):
         test_instance.kinesis_client.put_records.return_value = {
             'FailedRecordCount': 0}
 
-        test_instance._send_kinesis_format_records(_MOCK_KINESIS_RECORDS, 1)
+        test_instance._send_kinesis_format_records(_TEST_KINESIS_RECORDS, 1)
         test_instance.kinesis_client.put_records.assert_called_once_with(
-            Records=_MOCK_KINESIS_RECORDS, StreamARN='test_stream_arn')
+            Records=_TEST_KINESIS_RECORDS, StreamARN='test_stream_arn')
 
     def test_send_kinesis_format_records_with_failures(
             self, test_instance, mocker):
@@ -51,12 +51,12 @@ class TestKinesisClient:
                 'record4']},
             {'FailedRecordCount': 0}]
 
-        test_instance._send_kinesis_format_records(_MOCK_KINESIS_RECORDS, 1)
+        test_instance._send_kinesis_format_records(_TEST_KINESIS_RECORDS, 1)
         test_instance.kinesis_client.put_records.assert_has_calls([
-            mocker.call(Records=_MOCK_KINESIS_RECORDS,
+            mocker.call(Records=_TEST_KINESIS_RECORDS,
                         StreamARN='test_stream_arn'),
-            mocker.call(Records=[_MOCK_KINESIS_RECORDS[1],
-                                 _MOCK_KINESIS_RECORDS[3]],
+            mocker.call(Records=[_TEST_KINESIS_RECORDS[1],
+                                 _TEST_KINESIS_RECORDS[3]],
                         StreamARN='test_stream_arn')])
 
     def test_send_kinesis_format_records_with_repeating_failures(
@@ -68,8 +68,8 @@ class TestKinesisClient:
 
         with pytest.raises(KinesisClientError):
             test_instance._send_kinesis_format_records(
-                _MOCK_KINESIS_RECORDS, 1)
+                _TEST_KINESIS_RECORDS, 1)
 
         test_instance.kinesis_client.put_records.assert_has_calls([
-            mocker.call(Records=_MOCK_KINESIS_RECORDS,
+            mocker.call(Records=_TEST_KINESIS_RECORDS,
                         StreamARN='test_stream_arn')] * 5)

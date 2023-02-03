@@ -62,7 +62,7 @@ class AvroEncoder:
             decoder = BinaryDecoder(input_stream)
             try:
                 return datum_reader.read(decoder)
-            except AvroException as e:
+            except Exception as e:
                 self.logger.error('Failed to decode record: {}'.format(e))
                 raise AvroEncoderError(
                     'Failed to decode record: {}'.format(e)) from None

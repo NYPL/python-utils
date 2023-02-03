@@ -13,18 +13,20 @@ levels = {
 
 def create_log(module):
     logger = logging.getLogger(module)
-    if not logger.hasHandlers():
-        console_log = logging.StreamHandler(stream=sys.stdout)
+    if logger.hasHandlers():
+        logger.handlers = []
 
-        log_level = os.environ.get('LOG_LEVEL', 'info').lower()
+    console_log = logging.StreamHandler(stream=sys.stdout)
 
-        logger.setLevel(levels[log_level])
-        console_log.setLevel(levels[log_level])
+    log_level = os.environ.get('LOG_LEVEL', 'info').lower()
 
-        formatter = logging.Formatter(
-            '%(asctime)s | %(name)s | %(levelname)s: %(message)s')
-        console_log.setFormatter(formatter)
+    logger.setLevel(levels[log_level])
+    console_log.setLevel(levels[log_level])
 
-        logger.addHandler(console_log)
+    formatter = logging.Formatter(
+        '%(asctime)s | %(name)s | %(levelname)s: %(message)s')
+    console_log.setFormatter(formatter)
+
+    logger.addHandler(console_log)
 
     return logger

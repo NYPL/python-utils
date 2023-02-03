@@ -2,10 +2,8 @@ import boto3
 import os
 import yaml
 
-from base64 import b64decode
-from binascii import Error as base64Error
-from botocore.exceptions import ClientError
-from log_helper import create_log
+from nypl_py_utils.functions.kms_helper import decrypt_with_kms_client
+from nypl_py_utils.functions.log_helper import create_log
 
 logger = create_log('config_helper')
 
@@ -13,10 +11,11 @@ logger = create_log('config_helper')
 def load_env_file(run_type, file_string):
     """
     This method loads a YAML config file containing environment variables,
-    decrypts whichever are encrypted, and puts them all into os.environ.
+    decrypts whichever are encrypted, and puts them all into os.environ as
+    strings.
 
     It requires the YAML file to be split into a 'PLAINTEXT_VARIABLES' section
-    and a 'ENCRYPTED_VARIABLES' section.
+    and an 'ENCRYPTED_VARIABLES' section.
     """
 
     env_dict = None
@@ -26,9 +25,10 @@ def load_env_file(run_type, file_string):
         with open(open_file, 'r') as env_stream:
             try:
                 env_dict = yaml.safe_load(env_stream)
-            except yaml.YAMLError as err:
+            except yaml.YAMLError:
                 logger.error('Invalid YAML file: {}'.format(open_file))
-                raise err
+                raise ConfigHelperError(
+                    'Invalid YAML file: {}'.format(open_file)) from None
     except FileNotFoundError:
         logger.error('Could not find config file {}'.format(open_file))
         raise ConfigHelperError(
@@ -41,26 +41,7 @@ def load_env_file(run_type, file_string):
         kms_client = boto3.client(
             'kms', region_name=os.environ.get('AWS_REGION', 'us-east-1'))
         for key, value in env_dict.get('ENCRYPTED_VARIABLES', {}).items():
-            os.environ[key] = _decrypt_env_var(value, kms_client)
-
-
-def _decrypt_env_var(var, kms_client):
-    """
-    This method takes a KMS-encoded environment variable and a KMS client and
-    decrypts the variable into a usable value.
-    """
-
-    logger.debug('Decrypting environment variable with value {}'.format(var))
-    try:
-        decoded = b64decode(var)
-        return kms_client.decrypt(CiphertextBlob=decoded)['Plaintext'].decode(
-            'utf-8')
-    except (ClientError, base64Error, TypeError) as e:
-        logger.error(
-            'Could not decrypt \'{val}\': {err}'.format(val=var, err=e))
-        raise ConfigHelperError(
-            'Could not decrypt \'{val}\': {err}'.format(val=var, err=e)
-        ) from None
+            os.environ[key] = decrypt_with_kms_client(value, kms_client)
 
 
 class ConfigHelperError(Exception):

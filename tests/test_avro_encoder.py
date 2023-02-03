@@ -3,9 +3,10 @@ import pandas as pd
 import pytest
 
 from nypl_py_utils import AvroEncoder, AvroEncoderError
+from requests.exceptions import ConnectTimeout
 
-_MOCK_SCHEMA = {'data': {'schema': json.dumps({
-    'name': 'MockSchema',
+_TEST_SCHEMA = {'data': {'schema': json.dumps({
+    'name': 'TestSchema',
     'type': 'record',
     'fields': [
         {
@@ -25,13 +26,30 @@ class TestAvroEncoder:
     @pytest.fixture
     def test_instance(self, requests_mock):
         requests_mock.get(
-            'https://test_schema_url', text=json.dumps(_MOCK_SCHEMA))
+            'https://test_schema_url', text=json.dumps(_TEST_SCHEMA))
         return AvroEncoder('https://test_schema_url')
 
     def test_get_json_schema(self, test_instance):
-        assert test_instance.schema == _MOCK_SCHEMA['data']['schema']
+        assert test_instance.schema == _TEST_SCHEMA['data']['schema']
 
-    def test_encode_batch_success(self, test_instance):
+    def test_request_error(self, requests_mock):
+        requests_mock.get('https://test_schema_url', exc=ConnectTimeout)
+        with pytest.raises(AvroEncoderError):
+            AvroEncoder('https://test_schema_url')
+
+    def test_bad_json_error(self, requests_mock):
+        requests_mock.get(
+            'https://test_schema_url', text='bad json')
+        with pytest.raises(AvroEncoderError):
+            AvroEncoder('https://test_schema_url')
+
+    def test_missing_key_error(self, requests_mock):
+        requests_mock.get(
+            'https://test_schema_url', text=json.dumps({'field': 'value'}))
+        with pytest.raises(AvroEncoderError):
+            AvroEncoder('https://test_schema_url')
+
+    def test_encode_batch(self, test_instance):
         TEST_BATCH = pd.DataFrame(
             {'patron_id': [123, 456, 789],
              'library_branch': ['aa', None, 'bb']})
@@ -47,3 +65,13 @@ class TestAvroEncoder:
             {'patron_id': [123, 456], 'bad_field': ['bad', 'field']})
         with pytest.raises(AvroEncoderError):
             test_instance.encode_batch(BAD_BATCH)
+    
+    def test_decode_record(self, test_instance):
+        TEST_DECODED_RECORD = {'patron_id': 123, 'library_branch': 'aa'}
+        TEST_ENCODED_RECORD = b'\xf6\x01\x02\x04aa'
+        assert test_instance.decode_record(TEST_ENCODED_RECORD) == TEST_DECODED_RECORD
+    
+    def test_decode_record_error(self, test_instance):
+        TEST_ENCODED_RECORD = b'bad-encoding'
+        with pytest.raises(AvroEncoderError):
+            test_instance.decode_record(TEST_ENCODED_RECORD)
