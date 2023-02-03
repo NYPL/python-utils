@@ -13,6 +13,7 @@ _TEST_KINESIS_RECORDS = [
 ]
 
 
+@freeze_time('2023-01-01')
 class TestKinesisClient:
 
     @pytest.fixture
@@ -20,7 +21,6 @@ class TestKinesisClient:
         mocker.patch('boto3.client')
         return KinesisClient('test_stream_arn', 2)
 
-    @freeze_time('2023-01-01')
     def test_send_records(self, test_instance, mocker):
         MOCK_RECORDS = [b'a', b'b', b'c', b'd', b'e']
         mocked_send_method = mocker.patch(
