@@ -1,6 +1,5 @@
 import logging
 import os
-import pytest
 
 from freezegun import freeze_time
 from nypl_py_utils.functions.log_helper import create_log

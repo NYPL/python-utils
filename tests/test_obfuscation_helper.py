@@ -1,5 +1,4 @@
 import os
-import pytest
 
 from nypl_py_utils.functions.obfuscation_helper import (obfuscate,
                                                         obfuscate_with_salt)

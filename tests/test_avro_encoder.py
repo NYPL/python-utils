@@ -65,12 +65,13 @@ class TestAvroEncoder:
             {'patron_id': [123, 456], 'bad_field': ['bad', 'field']})
         with pytest.raises(AvroEncoderError):
             test_instance.encode_batch(BAD_BATCH)
-    
+
     def test_decode_record(self, test_instance):
         TEST_DECODED_RECORD = {'patron_id': 123, 'library_branch': 'aa'}
         TEST_ENCODED_RECORD = b'\xf6\x01\x02\x04aa'
-        assert test_instance.decode_record(TEST_ENCODED_RECORD) == TEST_DECODED_RECORD
-    
+        assert test_instance.decode_record(
+            TEST_ENCODED_RECORD) == TEST_DECODED_RECORD
+
     def test_decode_record_error(self, test_instance):
         TEST_ENCODED_RECORD = b'bad-encoding'
         with pytest.raises(AvroEncoderError):
