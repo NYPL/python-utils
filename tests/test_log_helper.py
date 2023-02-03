@@ -5,6 +5,7 @@ import time
 from freezegun import freeze_time
 from nypl_py_utils.functions.log_helper import create_log
 
+
 @freeze_time('2023-01-01 19:00:00')
 class TestLogHelper:
 
