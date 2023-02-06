@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 import pytest
 
 from nypl_py_utils import AvroEncoder, AvroEncoderError
@@ -49,20 +48,33 @@ class TestAvroEncoder:
         with pytest.raises(AvroEncoderError):
             AvroEncoder('https://test_schema_url')
 
+    def test_encode_record(self, test_instance):
+        TEST_RECORD = {'patron_id': 123, 'library_branch': 'aa'}
+        encoded_record = test_instance.encode_record(TEST_RECORD)
+        assert type(encoded_record) is bytes
+        assert test_instance.decode_record(encoded_record) == TEST_RECORD
+
+    def test_encode_record_error(self, test_instance):
+        TEST_RECORD = {'patron_id': 123, 'bad_field': 'bad'}
+        with pytest.raises(AvroEncoderError):
+            test_instance.encode_record(TEST_RECORD)
+
     def test_encode_batch(self, test_instance):
-        TEST_BATCH = pd.DataFrame(
-            {'patron_id': [123, 456, 789],
-             'library_branch': ['aa', None, 'bb']})
+        TEST_BATCH = [
+            {'patron_id': 123, 'library_branch': 'aa'},
+            {'patron_id': 456, 'library_branch': None},
+            {'patron_id': 789, 'library_branch': 'bb'}]
         encoded_records = test_instance.encode_batch(TEST_BATCH)
         assert len(encoded_records) == len(TEST_BATCH)
         for i in range(3):
             assert type(encoded_records[i]) is bytes
             assert test_instance.decode_record(
-                encoded_records[i]) == TEST_BATCH.loc[i].to_dict()
+                encoded_records[i]) == TEST_BATCH[i]
 
     def test_encode_batch_error(self, test_instance):
-        BAD_BATCH = pd.DataFrame(
-            {'patron_id': [123, 456], 'bad_field': ['bad', 'field']})
+        BAD_BATCH = [
+            {'patron_id': 123, 'library_branch': 'aa'},
+            {'patron_id': 456, 'bad_field': 'bad'}]
         with pytest.raises(AvroEncoderError):
             test_instance.encode_batch(BAD_BATCH)
 

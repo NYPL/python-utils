@@ -1,5 +1,4 @@
 import avro.schema
-import json
 import requests
 
 from avro.errors import AvroException
@@ -20,23 +19,40 @@ class AvroEncoder:
         self.schema = avro.schema.parse(
             self._get_json_schema(platform_schema_url))
 
-    def encode_batch(self, records_df):
+    def encode_record(self, record):
         """
-        Encodes each row of a dataframe using the given Avro schema. The
-        dataframe must have the exact same column types and names as the
-        schema.
+        Encodes a single JSON record using the given Avro schema.
+
+        Returns the encoded record as a byte string.
+        """
+        self.logger.debug(
+            'Encoding record using {schema} schema'.format(
+               schema=self.schema.name))
+        datum_writer = DatumWriter(self.schema)
+        with BytesIO() as output_stream:
+            encoder = BinaryEncoder(output_stream)
+            try:
+                datum_writer.write(record, encoder)
+                return output_stream.getvalue()
+            except AvroException as e:
+                self.logger.error('Failed to encode record: {}'.format(e))
+                raise AvroEncoderError(
+                    'Failed to encode record: {}'.format(e)) from None
+
+    def encode_batch(self, json_list):
+        """
+        Encodes a list of JSON records using the given Avro schema.
 
         Returns a list of byte strings where each string is an encoded record.
         """
         self.logger.info(
             'Encoding ({num_rec}) records using {schema} schema'.format(
-                num_rec=len(records_df), schema=self.schema.name))
+                num_rec=len(json_list), schema=self.schema.name))
         encoded_records = []
         datum_writer = DatumWriter(self.schema)
         with BytesIO() as output_stream:
             encoder = BinaryEncoder(output_stream)
-            decoded_records = json.loads(records_df.to_json(orient='records'))
-            for record in decoded_records:
+            for record in json_list:
                 try:
                     datum_writer.write(record, encoder)
                     encoded_records.append(output_stream.getvalue())

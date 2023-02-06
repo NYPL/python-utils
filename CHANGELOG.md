@@ -1,8 +1,11 @@
 # Changelog
 
-## v0.0.2 - 2/3
+## v0.0.2 - 2/6
 
-Added tests for helper functions and added CODEOWNERS and GitHub Actions workflows for running tests and deploying to QA.
+- Added CODEOWNERS
+- Added GitHub Actions workflows for running tests and deploying to QA
+- Added tests for helper functions
+- Updated Avro encoder to avoid dependency on pandas
 
 ## v0.0.1 - 1/26
 
