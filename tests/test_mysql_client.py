@@ -6,7 +6,7 @@ from nypl_py_utils import MySQLClient, MySQLClientError
 class TestMySQLClient:
 
     @pytest.fixture
-    def test_mysql_conn(self, mocker):
+    def mock_mysql_conn(self, mocker):
         return mocker.patch('mysql.connector.connect')
 
     @pytest.fixture
@@ -14,15 +14,15 @@ class TestMySQLClient:
         return MySQLClient('test_host', 'test_port', 'test_database',
                            'test_user', 'test_password')
 
-    def test_connect(self, test_mysql_conn, test_instance):
+    def test_connect(self, mock_mysql_conn, test_instance):
         test_instance.connect()
-        test_mysql_conn.assert_called_once_with(host='test_host',
+        mock_mysql_conn.assert_called_once_with(host='test_host',
                                                 port='test_port',
                                                 database='test_database',
                                                 user='test_user',
                                                 password='test_password')
 
-    def test_execute_query(self, test_mysql_conn, test_instance, mocker):
+    def test_execute_query(self, mock_mysql_conn, test_instance, mocker):
         test_instance.connect()
 
         mock_cursor = mocker.MagicMock()
@@ -35,7 +35,7 @@ class TestMySQLClient:
         mock_cursor.close.assert_called_once()
 
     def test_execute_query_with_exception(
-            self, test_mysql_conn, test_instance, mocker):
+            self, mock_mysql_conn, test_instance, mocker):
         test_instance.connect()
 
         mock_cursor = mocker.MagicMock()
@@ -48,7 +48,7 @@ class TestMySQLClient:
         test_instance.conn.rollback.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    def test_close_connection(self, test_mysql_conn, test_instance):
+    def test_close_connection(self, mock_mysql_conn, test_instance):
         test_instance.connect()
         test_instance.close_connection()
         test_instance.conn.close.assert_called_once()

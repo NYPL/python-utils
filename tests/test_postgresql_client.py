@@ -6,7 +6,7 @@ from nypl_py_utils import PostgreSQLClient, PostgreSQLClientError
 class TestPostgreSQLClient:
 
     @pytest.fixture
-    def test_pg_conn(self, mocker):
+    def mock_pg_conn(self, mocker):
         return mocker.patch('psycopg.connect')
 
     @pytest.fixture
@@ -14,15 +14,15 @@ class TestPostgreSQLClient:
         return PostgreSQLClient('test_host', 'test_port', 'test_db_name',
                                 'test_user', 'test_password')
 
-    def test_connect(self, test_pg_conn, test_instance):
+    def test_connect(self, mock_pg_conn, test_instance):
         test_instance.connect()
-        test_pg_conn.assert_called_once_with(host='test_host',
+        mock_pg_conn.assert_called_once_with(host='test_host',
                                              port='test_port',
                                              dbname='test_db_name',
                                              user='test_user',
                                              password='test_password')
 
-    def test_execute_query(self, test_pg_conn, test_instance, mocker):
+    def test_execute_query(self, mock_pg_conn, test_instance, mocker):
         test_instance.connect()
 
         mock_cursor = mocker.MagicMock()
@@ -36,7 +36,7 @@ class TestPostgreSQLClient:
         mock_cursor.close.assert_called_once()
 
     def test_execute_query_with_exception(
-            self, test_pg_conn, test_instance, mocker):
+            self, mock_pg_conn, test_instance, mocker):
         test_instance.connect()
 
         mock_cursor = mocker.MagicMock()
@@ -49,7 +49,7 @@ class TestPostgreSQLClient:
         test_instance.conn.rollback.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    def test_close_connection(self, test_pg_conn, test_instance):
+    def test_close_connection(self, mock_pg_conn, test_instance):
         test_instance.connect()
         test_instance.close_connection()
         test_instance.conn.close.assert_called_once()

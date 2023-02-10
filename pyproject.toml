@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nypl_py_utils"
-version = "0.0.1"
+version = "0.0.4"
 authors = [
   { name="Aaron Friedman", email="aaronfriedman@nypl.org" },
 ]
@@ -34,7 +34,6 @@ tests = [
     "flake8>=6.0.0",
     "freezegun>=1.2.2",
     "mock>=4.0.3",
-    "pandas>=1.5.1",
     "pytest>=7.2.0",
     "pytest-mock>=3.10.0",
     "requests-mock>=1.10.0"
