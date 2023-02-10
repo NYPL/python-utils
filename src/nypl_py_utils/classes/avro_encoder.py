@@ -39,7 +39,7 @@ class AvroEncoder:
                 raise AvroEncoderError(
                     'Failed to encode record: {}'.format(e)) from None
 
-    def encode_batch(self, json_list):
+    def encode_batch(self, record_list):
         """
         Encodes a list of JSON records using the given Avro schema.
 
@@ -47,12 +47,12 @@ class AvroEncoder:
         """
         self.logger.info(
             'Encoding ({num_rec}) records using {schema} schema'.format(
-                num_rec=len(json_list), schema=self.schema.name))
+                num_rec=len(record_list), schema=self.schema.name))
         encoded_records = []
         datum_writer = DatumWriter(self.schema)
         with BytesIO() as output_stream:
             encoder = BinaryEncoder(output_stream)
-            for record in json_list:
+            for record in record_list:
                 try:
                     datum_writer.write(record, encoder)
                     encoded_records.append(output_stream.getvalue())

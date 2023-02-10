@@ -1,8 +1,7 @@
-import boto3
 import os
 import yaml
 
-from nypl_py_utils.functions.kms_helper import decrypt_with_kms_client
+from nypl_py_utils import KmsClient
 from nypl_py_utils.functions.log_helper import create_log
 
 logger = create_log('config_helper')
@@ -38,10 +37,10 @@ def load_env_file(run_type, file_string):
         for key, value in env_dict.get('PLAINTEXT_VARIABLES', {}).items():
             os.environ[key] = str(value)
 
-        kms_client = boto3.client(
-            'kms', region_name=os.environ.get('AWS_REGION', 'us-east-1'))
+        kms_client = KmsClient()
         for key, value in env_dict.get('ENCRYPTED_VARIABLES', {}).items():
-            os.environ[key] = decrypt_with_kms_client(value, kms_client)
+            os.environ[key] = kms_client.decrypt(value)
+        kms_client.close()
 
 
 class ConfigHelperError(Exception):

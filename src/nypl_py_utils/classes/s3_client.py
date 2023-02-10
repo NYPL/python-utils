@@ -19,8 +19,17 @@ class S3Client:
         self.bucket = bucket
         self.resource = resource
 
-        self.s3_client = boto3.client(
-            's3', region_name=os.environ.get('AWS_REGION', 'us-east-1'))
+        try:
+            self.s3_client = boto3.client(
+                's3', region_name=os.environ.get('AWS_REGION', 'us-east-1'))
+        except ClientError as e:
+            self.logger.error(
+                'Could not create S3 client: {err}'.format(err=e))
+            raise S3ClientError(
+                'Could not create S3 client: {err}'.format(err=e)) from None
+
+    def close(self):
+        self.s3_client.close()
 
     def fetch_cache(self):
         """Fetches a JSON file from S3 and returns the resulting dictionary"""

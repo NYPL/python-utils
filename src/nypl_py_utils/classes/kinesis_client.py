@@ -22,8 +22,19 @@ class KinesisClient:
         self.batch_size = batch_size
         self.max_retries = max_retries
 
-        self.kinesis_client = boto3.client(
-            'kinesis', region_name=os.environ.get('AWS_REGION', 'us-east-1'))
+        try:
+            self.kinesis_client = boto3.client(
+                'kinesis', region_name=os.environ.get('AWS_REGION',
+                                                      'us-east-1'))
+        except ClientError as e:
+            self.logger.error(
+                'Could not create Kinesis client: {err}'.format(err=e))
+            raise KinesisClientError(
+                'Could not create Kinesis client: {err}'.format(err=e)
+            ) from None
+
+    def close(self):
+        self.kinesis_client.close()
 
     def send_records(self, records):
         """
