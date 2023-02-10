@@ -1,0 +1,57 @@
+name: Deploy to production if tagged as production release
+
+on:
+  release:
+    types: [ released ]
+
+jobs:
+  check_production_tag:
+    name: Check if the release is tagged as production
+    runs-on: ubuntu-latest
+    outputs:
+      has_production_tag: ${{ steps.check-production-tag.outputs.run_jobs }}
+    steps:
+      - name: check production tag ${{ github.ref }}
+        id: check-production-tag
+        run: |
+          if [[ ${{ github.ref }} =~ refs\/tags\/production ]]; then
+            echo "run_jobs=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_jobs=false" >> $GITHUB_OUTPUT
+          fi
+  publish_production:
+    needs: [ check_production_tag ]
+    if: needs.check_production_tag.outputs.has_production_tag == 'true'
+    name: Publish package to pypi.org
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+          cache-dependency-path: 'pyproject.toml'
+
+      - name: Install pypa/build
+        run: >-
+          python -m
+          pip install
+          build
+          --user
+      
+      - name: Build a binary wheel and a source tarball
+        run: >-
+          python -m
+          build
+          --sdist
+          --wheel
+          --outdir dist/
+          .
+
+      - name: Publish distribution package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
