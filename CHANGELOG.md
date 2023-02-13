@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.4 - 2/13
+- In PostgreSQLClient, allow reconnecting after `close_connection` has been called
+- Updated README with deployment information
+
 ## v0.0.3 - 2/10
 
 - Added GitHub Actions workflow for deploying to production
