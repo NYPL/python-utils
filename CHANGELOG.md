@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.3 - 2/10
+
+- Added GitHub Actions workflow for deploying to production
+- Switched PostgreSQLClient to use connection pooling
+
 ## v0.0.2 - 2/6
 
 - Added CODEOWNERS
