@@ -33,7 +33,7 @@ class TestPostgreSQLClient:
 
     def test_connect(self, test_instance):
         test_instance.connect()
-        test_instance.pool.open.assert_called_once()
+        test_instance.pool.open.assert_called_once_with(wait=True, timeout=300)
 
     def test_connect_with_exception(self):
         test_instance = PostgreSQLClient(
@@ -61,4 +61,12 @@ class TestPostgreSQLClient:
     def test_close_connection(self, test_instance):
         test_instance.connect()
         test_instance.close_connection()
-        test_instance.pool.close.assert_called_once()
+        assert test_instance.pool is None
+
+    def test_reopen_connection(self, test_instance, mocker):
+        test_instance.connect()
+        test_instance.close_connection()
+        test_instance.connect()
+        test_instance.pool.open.assert_has_calls([
+            mocker.call(wait=True, timeout=300),
+            mocker.call(wait=True, timeout=300)])

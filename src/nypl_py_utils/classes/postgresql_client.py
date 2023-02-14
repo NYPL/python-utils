@@ -14,11 +14,14 @@ class PostgreSQLClient:
         self.db_name = db_name
         self.timeout = kwargs.get('timeout', 300)
 
-        conn_info = 'postgresql://{user}:{password}@{host}:{port}/{db_name}'\
-            .format(user=user, password=password, host=host, port=port,
-                    db_name=db_name)
+        self.conn_info = ('postgresql://{user}:{password}@{host}:{port}/'
+                          '{db_name}').format(user=user, password=password,
+                                              host=host, port=port,
+                                              db_name=db_name)
+        self.min_size = kwargs.get('min_size', 1)
+        self.max_size = kwargs.get('max_size', None)
         self.pool = ConnectionPool(
-            conn_info, open=False,
+            self.conn_info, open=False,
             min_size=kwargs.get('min_size', 1),
             max_size=kwargs.get('max_size', None))
 
@@ -29,6 +32,10 @@ class PostgreSQLClient:
         """
         self.logger.info('Connecting to {} database'.format(self.db_name))
         try:
+            if self.pool is None:
+                self.pool = ConnectionPool(
+                    self.conn_info, open=False, min_size=self.min_size,
+                    max_size=self.max_size)
             self.pool.open(wait=True, timeout=self.timeout)
         except psycopg.Error as e:
             self.logger.error(
@@ -67,6 +74,7 @@ class PostgreSQLClient:
         self.logger.debug('Closing {} database connection'.format(
             self.db_name))
         self.pool.close()
+        self.pool = None
 
 
 class PostgreSQLClientError(Exception):
