@@ -19,7 +19,7 @@ This package contains common Python utility classes and functions.
 ## Developing locally
 In order to use the local version of the package instead of the global version, use a virtual environment. To set up a virtual environment and install all the necessary dependencies, run:
 
-```bash
+```
 python3 -m venv testenv
 source testenv/bin/activate
 pip install --upgrade pip
@@ -29,6 +29,22 @@ deactivate && source testenv/bin/activate
 ```
 
 Add any new dependencies required by code in the `nypl_py_utils` directory to the `dependencies` section of `pyproject.toml`. Add dependencies only required by code in the `tests` directory to the `[project.optional-dependencies]` section.
+
+### Troubleshooting
+If running `main.py` in this virtual environment produces the following error:
+```
+ImportError: no pq wrapper available.
+Attempts made:
+- couldn't import psycopg 'c' implementation: No module named 'psycopg_c'
+- couldn't import psycopg 'binary' implementation: No module named 'psycopg_binary'
+- couldn't import psycopg 'python' implementation: dlsym(0x7f8620446f40, PQsslInUse): symbol not found
+```
+
+then try running:
+```
+pip uninstall psycopg
+pip install "psycopg[c]"
+```
 
 ## Git workflow
 This repo uses the [Main-QA-Production](https://github.com/NYPL/engineering-general/blob/main/standards/git-workflow.md#main-qa-production) git workflow.
