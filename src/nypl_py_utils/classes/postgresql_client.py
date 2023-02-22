@@ -1,6 +1,7 @@
 import psycopg
 
 from nypl_py_utils.functions.log_helper import create_log
+from psycopg.rows import tuple_row
 from psycopg_pool import ConnectionPool
 
 
@@ -45,19 +46,42 @@ class PostgreSQLClient:
                 'Error connecting to {name} database: {error}'.format(
                     name=self.db_name, error=e)) from None
 
-    def execute_query(self, query):
+    def execute_query(self, query, is_write_query=False, query_params=None,
+                      row_factory=tuple_row):
         """
         Requests a connection from the pool and uses it to execute an arbitrary
         query. After the query is complete, returns the connection to the pool.
 
-        Returns a sequence of tuples representing the rows returned by the
-        query.
+        Parameters
+        ----------
+        query: str
+            The query to execute
+        is_write_query: bool, optional
+            Whether or not the query is writing to the database, in which case
+            the transaction needs to be committed and None should be returned
+        query_params: sequence, optional
+            The values to be used in a parameterized query
+        row_factory: RowFactory, optional
+            A psycopg RowFactory that determines how the data will be returned.
+            Defaults to tuple_row, which returns the rows as a list of tuples.
+
+        Returns
+        -------
+        None or sequence
+            None if is_write_query is True. Some type of sequence based on
+            the row_factory input if is_write_query is False.
         """
         self.logger.info('Querying {} database'.format(self.db_name))
         self.logger.debug('Executing query {}'.format(query))
         with self.pool.connection() as conn:
             try:
-                return conn.execute(query).fetchall()
+                conn.row_factory = row_factory
+                cursor = conn.execute(query, query_params)
+                if is_write_query:
+                    conn.commit()
+                    return None
+                else:
+                    return cursor.fetchall()
             except Exception as e:
                 conn.rollback()
                 self.logger.error(
