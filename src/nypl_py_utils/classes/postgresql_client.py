@@ -73,6 +73,7 @@ class PostgreSQLClient:
         """
         self.logger.info('Querying {} database'.format(self.db_name))
         self.logger.debug('Executing query {}'.format(query))
+        self.pool.check()
         with self.pool.connection() as conn:
             try:
                 conn.row_factory = row_factory
