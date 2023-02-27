@@ -32,19 +32,34 @@ class RedshiftClient:
                 'Error connecting to {name} database: {error}'.format(
                     name=self.database, error=e)) from None
 
-    def execute_query(self, query):
+    def execute_query(self, query, dataframe=False):
         """
         Executes an arbitrary query against the given database connection.
 
-        Returns a sequence of tuples representing the rows returned by the
-        query.
+        Parameters
+        ----------
+        query: str
+            The query to execute
+        dataframe: bool, optional
+            Whether the data will be returned as a pandas DataFrame. Defaults
+            to False, which means the data is returned as a list of tuples.
+
+        Returns
+        -------
+        None or sequence
+            None if is_write_query is True. A list of tuples or a pandas
+            DataFrame (based on the dataframe input) if is_write_query is
+            False.
         """
         self.logger.info('Querying {} database'.format(self.database))
         self.logger.debug('Executing query {}'.format(query))
         try:
             cursor = self.conn.cursor()
             cursor.execute(query)
-            return cursor.fetchall()
+            if dataframe:
+                return cursor.fetch_dataframe()
+            else:
+                return cursor.fetchall()
         except Exception as e:
             self.conn.rollback()
             self.logger.error(

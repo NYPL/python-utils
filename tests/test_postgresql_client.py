@@ -43,7 +43,54 @@ class TestPostgreSQLClient:
         with pytest.raises(PostgreSQLClientError):
             test_instance.connect()
 
-    def test_execute_query(self, test_instance, mocker):
+    def test_execute_read_query(self, test_instance, mocker):
+        test_instance.connect()
+
+        mock_cursor = mocker.MagicMock()
+        mock_cursor.fetchall.return_value = [(1, 2, 3), ('a', 'b', 'c')]
+        mock_conn = mocker.MagicMock()
+        mock_conn.execute.return_value = mock_cursor
+        mock_conn_context = mocker.MagicMock()
+        mock_conn_context.__enter__.return_value = mock_conn
+        mocker.patch('psycopg_pool.ConnectionPool.connection',
+                     return_value=mock_conn_context)
+
+        assert test_instance.execute_query(
+            'test query') == [(1, 2, 3), ('a', 'b', 'c')]
+        mock_conn.execute.assert_called_once_with('test query', None)
+        mock_cursor.fetchall.assert_called_once()
+
+    def test_execute_write_query(self, test_instance, mocker):
+        test_instance.connect()
+
+        mock_conn = mocker.MagicMock()
+        mock_conn_context = mocker.MagicMock()
+        mock_conn_context.__enter__.return_value = mock_conn
+        mocker.patch('psycopg_pool.ConnectionPool.connection',
+                     return_value=mock_conn_context)
+
+        assert test_instance.execute_query(
+            'test query', is_write_query=True) is None
+        mock_conn.execute.assert_called_once_with('test query', None)
+        mock_conn.commit.assert_called_once()
+
+    def test_execute_write_query_with_params(self, test_instance, mocker):
+        test_instance.connect()
+
+        mock_conn = mocker.MagicMock()
+        mock_conn_context = mocker.MagicMock()
+        mock_conn_context.__enter__.return_value = mock_conn
+        mocker.patch('psycopg_pool.ConnectionPool.connection',
+                     return_value=mock_conn_context)
+
+        assert test_instance.execute_query(
+            'test query %s %s', is_write_query=True,
+            query_params=('a', 1)) is None
+        mock_conn.execute.assert_called_once_with('test query %s %s',
+                                                  ('a', 1))
+        mock_conn.commit.assert_called_once()
+
+    def test_execute_query_with_exception(self, test_instance, mocker):
         test_instance.connect()
 
         mock_conn = mocker.MagicMock()
