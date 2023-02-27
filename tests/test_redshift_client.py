@@ -31,6 +31,19 @@ class TestRedshiftClient:
         assert test_instance.execute_query(
             'test query') == [[1, 2, 3], ['a', 'b', 'c']]
         mock_cursor.execute.assert_called_once_with('test query')
+        mock_cursor.fetchall.assert_called_once()
+        mock_cursor.close.assert_called_once()
+
+    def test_execute_dataframe_query(self, mock_redshift_conn, test_instance,
+                                     mocker):
+        test_instance.connect()
+
+        mock_cursor = mocker.MagicMock()
+        test_instance.conn.cursor.return_value = mock_cursor
+
+        test_instance.execute_query('test query', dataframe=True)
+        mock_cursor.execute.assert_called_once_with('test query')
+        mock_cursor.fetch_dataframe.assert_called_once()
         mock_cursor.close.assert_called_once()
 
     def test_execute_query_with_exception(
