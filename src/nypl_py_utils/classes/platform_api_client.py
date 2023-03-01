@@ -35,7 +35,6 @@ class PlatformApiClient:
         """
         Issue an HTTP POST on the given request_path with given JSON body
         """
-        return self._do_http_method('GET', request_path, **kwargs)
         kwargs['json'] = json
         return self._do_http_method('POST', request_path, **kwargs)
 
