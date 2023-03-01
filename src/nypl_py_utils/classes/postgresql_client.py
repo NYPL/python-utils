@@ -19,12 +19,11 @@ class PostgreSQLClient:
                           '{db_name}').format(user=user, password=password,
                                               host=host, port=port,
                                               db_name=db_name)
-        self.min_size = kwargs.get('min_size', 1)
-        self.max_size = kwargs.get('max_size', None)
+        self.min_size = kwargs.get('min_size', 0)
+        self.max_size = kwargs.get('max_size', 1)
         self.pool = ConnectionPool(
             self.conn_info, open=False,
-            min_size=kwargs.get('min_size', 1),
-            max_size=kwargs.get('max_size', None))
+            min_size=self.min_size, max_size=self.max_size)
 
     def connect(self):
         """
@@ -73,7 +72,6 @@ class PostgreSQLClient:
         """
         self.logger.info('Querying {} database'.format(self.db_name))
         self.logger.debug('Executing query {}'.format(query))
-        self.pool.check()
         with self.pool.connection() as conn:
             try:
                 conn.row_factory = row_factory

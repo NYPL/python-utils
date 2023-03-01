@@ -10,6 +10,7 @@ This package contains common Python utility classes and functions.
 * Connecting to and querying a MySQL database
 * Connecting to and querying a PostgreSQL database using a connection pool
 * Connecting to and querying Redshift
+* Making requests to the Oauth2 authenticated APIS such as NYPL Platform API and Sierra
 
 ## Functions
 * Reading a YAML config file and putting the contents in os.environ
