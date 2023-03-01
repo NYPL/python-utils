@@ -65,12 +65,12 @@ class PlatformApiClient:
         try:
             return self.oauth_client.request(method, url, **kwargs).json()
         except TokenExpiredError as e:
-            print(f'TokenExpiredError encountered: {e}')
+            self.logger.debug(f'TokenExpiredError encountered: {e}')
             self._generate_access_token()
 
             return self._do_http_method(method, request_path, **kwargs)
         except TimeoutError as e:
-            print(f'TimeoutError encountered: {e}')
+            self.logger.error(f'TimeoutError encountered: {e}')
             return {}
 
     def _create_oauth_client(self):
