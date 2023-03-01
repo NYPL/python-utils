@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.0.7 - 2/28/23
+- Added PlatformApiClient for oauth2 authenticated calls to our Platform API
+
 ## v0.0.5 - 2/22/23
 - Support write queries to PostgreSQL and MySQL databases
 - Support different return formats when querying PostgreSQL, MySQL, and Redshift databases
