@@ -1,7 +1,8 @@
 # Changelog
 
-## v0.0.7 - 2/28/23
+## v0.0.7 - 3/1/23
 - Added Oauth2ApiClient for oauth2 authenticated calls to our Platform API and Sierra
+- Set PostgreSQL connection pool to have a default pool size minimum of 0
 
 ## v0.0.5 - 2/22/23
 - Support write queries to PostgreSQL and MySQL databases
