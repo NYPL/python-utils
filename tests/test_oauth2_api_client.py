@@ -3,7 +3,7 @@ import json
 import pytest
 from requests_oauthlib import OAuth2Session
 
-from nypl_py_utils import PlatformApiClient
+from nypl_py_utils import Oauth2ApiClient
 # from requests.exceptions import ConnectTimeout
 
 _TOKEN_RESPONSE = {
@@ -18,18 +18,18 @@ _TOKEN_RESPONSE = {
 BASE_URL = 'https://example.com/api/v0.1'
 
 
-class TestPlatformApiClient:
+class TestOauth2ApiClient:
 
     @pytest.fixture
     def test_instance(self, requests_mock):
         token_url = 'https://oauth.example.com/oauth/token'
         requests_mock.post(token_url, text=json.dumps(_TOKEN_RESPONSE))
 
-        return PlatformApiClient(base_url=BASE_URL,
-                                 token_url=token_url,
-                                 client_id='clientid',
-                                 client_secret='clientsecret'
-                                 )
+        return Oauth2ApiClient(base_url=BASE_URL,
+                               token_url=token_url,
+                               client_id='clientid',
+                               client_secret='clientsecret'
+                               )
 
     def test_uses_env_vars(self):
         env = {
@@ -41,7 +41,7 @@ class TestPlatformApiClient:
         for key, value in env.items():
             os.environ[key] = value
 
-        client = PlatformApiClient()
+        client = Oauth2ApiClient()
         assert client.client_id == 'env client id'
         assert client.client_secret == 'env client secret'
         assert client.token_url == 'env token url'

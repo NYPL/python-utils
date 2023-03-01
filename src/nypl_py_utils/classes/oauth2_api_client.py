@@ -4,9 +4,10 @@ from requests_oauthlib import OAuth2Session
 from nypl_py_utils.functions.log_helper import create_log
 
 
-class PlatformApiClient:
+class Oauth2ApiClient:
     """
-    Client for interacting with NYPL Platform API endpoints
+    Client for interacting with an Oauth2 authenticated API such as NYPL's
+    Platform API endpoints
     """
 
     def __init__(self, client_id=None, client_secret=None, base_url=None,
@@ -23,7 +24,7 @@ class PlatformApiClient:
         self.client = None
         self.token = None
 
-        self.logger = create_log('platform_api_client')
+        self.logger = create_log('oauth2_api_client')
 
     def get(self, request_path, **kwargs):
         """
