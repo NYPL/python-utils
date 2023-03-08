@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nypl_py_utils"
-version = "0.0.7"
+version = "0.0.8"
 authors = [
   { name="Aaron Friedman", email="aaronfriedman@nypl.org" },
 ]
