@@ -1,8 +1,8 @@
 # Changelog
 
-## v0.0.8 - 3/3/23
-- Pass in all kwargs from PostgreSQLClient to ConnectionPool so that all ConnectionPool settings
-can be set from the wrapper
+## v0.0.8 - 3/14/23
+- Create separate PostgreSQLClient and PostgreSQLPoolClient classes
+- Update PostgreSQL and MySQL clients to accept write queries implicitly
 
 ## v0.0.7 - 3/1/23
 - Added Oauth2ApiClient for oauth2 authenticated calls to our Platform API and Sierra

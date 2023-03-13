@@ -8,6 +8,7 @@ This package contains common Python utility classes and functions.
 * Decrypting values with KMS
 * Encoding and decoding records using a given Avro schema
 * Connecting to and querying a MySQL database
+* Connecting to and querying a PostgreSQL database
 * Connecting to and querying a PostgreSQL database using a connection pool
 * Connecting to and querying Redshift
 * Making requests to the Oauth2 authenticated APIs such as NYPL Platform API and Sierra
