@@ -23,7 +23,7 @@ class TestPostgreSQLPoolClient:
 
     def test_init_with_long_max_idle(self):
         with pytest.raises(PostgreSQLPoolClientError):
-            test_instance = PostgreSQLPoolClient(
+            PostgreSQLPoolClient(
                 'test_host', 'test_port', 'test_db_name', 'test_user',
                 'test_password', max_idle=300.0)
 
