@@ -1,8 +1,9 @@
 # Changelog
 
-## v0.0.8 - 3/14/23
+## v1.0.0 - 3/16/23
 - Create separate PostgreSQLClient and PostgreSQLPoolClient classes
 - Update PostgreSQL and MySQL clients to accept write queries implicitly
+- Update RedshiftClient to ensure SSL is being used
 
 ## v0.0.7 - 3/1/23
 - Added Oauth2ApiClient for oauth2 authenticated calls to our Platform API and Sierra

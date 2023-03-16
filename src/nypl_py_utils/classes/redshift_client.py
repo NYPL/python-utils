@@ -23,7 +23,8 @@ class RedshiftClient:
                 host=self.host,
                 database=self.database,
                 user=self.user,
-                password=self.password)
+                password=self.password,
+                sslmode='verify-full')
         except ClientError as e:
             self.logger.error(
                 'Error connecting to {name} database: {error}'.format(
