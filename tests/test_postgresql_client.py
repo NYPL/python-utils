@@ -1,6 +1,7 @@
 import pytest
 
 from nypl_py_utils import PostgreSQLClient, PostgreSQLClientError
+from psycopg import Error
 
 
 class TestPostgreSQLClient:
@@ -17,25 +18,29 @@ class TestPostgreSQLClient:
             'postgresql://test_user:test_password@test_host:test_port/' +
             'test_db_name')
         assert test_instance.pool._opened is False
-        assert test_instance.pool.min_size == 1
+        assert test_instance.pool.min_size == 0
         assert test_instance.pool.max_size == 1
 
     def test_init_with_kwargs(self):
         test_instance = PostgreSQLClient(
             'test_host', 'test_port', 'test_db_name', 'test_user',
-            'test_password', min_size=5, max_size=10)
+            'test_password', min_size=5, max_size=10, max_idle=15.0)
         assert test_instance.pool.conninfo == (
             'postgresql://test_user:test_password@test_host:test_port/' +
             'test_db_name')
         assert test_instance.pool._opened is False
         assert test_instance.pool.min_size == 5
         assert test_instance.pool.max_size == 10
+        assert test_instance.pool.max_idle == 15.0
 
     def test_connect(self, test_instance):
         test_instance.connect()
         test_instance.pool.open.assert_called_once_with(wait=True, timeout=300)
 
-    def test_connect_with_exception(self):
+    def test_connect_with_exception(self, mocker):
+        mocker.patch('psycopg_pool.ConnectionPool.open',
+                     side_effect=Error())
+
         test_instance = PostgreSQLClient(
             'test_host', 'test_port', 'test_db_name', 'test_user',
             'test_password', timeout=1.0)
