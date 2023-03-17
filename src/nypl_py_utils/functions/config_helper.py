@@ -1,7 +1,7 @@
 import os
 import yaml
 
-from nypl_py_utils import KmsClient
+from nypl_py_utils.classes.kms_client import KmsClient
 from nypl_py_utils.functions.log_helper import create_log
 
 logger = create_log('config_helper')

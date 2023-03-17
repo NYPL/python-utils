@@ -1,6 +1,6 @@
 import pytest
 
-from nypl_py_utils import PostgreSQLPoolClient, PostgreSQLPoolClientError
+from nypl_py_utils.classes.postgresql_pool_client import PostgreSQLPoolClient, PostgreSQLPoolClientError
 from psycopg import Error
 
 

@@ -3,7 +3,7 @@ import json
 import pytest
 from requests_oauthlib import OAuth2Session
 
-from nypl_py_utils import Oauth2ApiClient
+from nypl_py_utils.classes.oauth2_api_client import Oauth2ApiClient
 # from requests.exceptions import ConnectTimeout
 
 _TOKEN_RESPONSE = {

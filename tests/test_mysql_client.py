@@ -1,6 +1,6 @@
 import pytest
 
-from nypl_py_utils import MySQLClient, MySQLClientError
+from nypl_py_utils.classes.mysql_client import MySQLClient, MySQLClientError
 
 
 class TestMySQLClient:
