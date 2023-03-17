@@ -1,7 +1,8 @@
 import pytest
 
 from freezegun import freeze_time
-from nypl_py_utils.classes.kinesis_client import KinesisClient, KinesisClientError
+from nypl_py_utils.classes.kinesis_client import (
+    KinesisClient, KinesisClientError)
 
 _TEST_DATETIME_KEY = '1672531200000000000'
 _TEST_KINESIS_RECORDS = [

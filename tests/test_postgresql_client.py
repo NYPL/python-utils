@@ -1,6 +1,7 @@
 import pytest
 
-from nypl_py_utils.classes.postgresql_client import PostgreSQLClient, PostgreSQLClientError
+from nypl_py_utils.classes.postgresql_client import (
+    PostgreSQLClient, PostgreSQLClientError)
 
 
 class TestPostgreSQLClient:

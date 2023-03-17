@@ -1,6 +1,7 @@
 import pytest
 
-from nypl_py_utils.classes.redshift_client import RedshiftClient, RedshiftClientError
+from nypl_py_utils.classes.redshift_client import (
+    RedshiftClient, RedshiftClientError)
 
 
 class TestRedshiftClient:
