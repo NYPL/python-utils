@@ -21,8 +21,7 @@ class Oauth2ApiClient:
         self.base_url = base_url \
             or os.environ.get('NYPL_API_BASE_URL', None)
 
-        self.client = None
-        self.token = None
+        self.oauth_client = None
 
         self.logger = create_log('oauth2_api_client')
 
@@ -56,18 +55,30 @@ class Oauth2ApiClient:
         """
         Issue an HTTP method call on on the given request_path
         """
-        if not self.client:
+        if not self.oauth_client:
             self._create_oauth_client()
 
         url = f'{self.base_url}/{request_path}'
         self.logger.debug(f'{method} {url}')
 
         try:
-            return self.oauth_client.request(method, url, **kwargs).json()
-        except TokenExpiredError as e:
-            self.logger.debug(f'TokenExpiredError encountered: {e}')
-            self._generate_access_token()
+            # Build kwargs cleaned of local variables:
+            kwargs_cleaned = {k: kwargs[k] for k in kwargs
+                              if not k.startswith('_do_http_method_')}
+            resp = self.oauth_client.request(method, url, **kwargs_cleaned)
+            resp.raise_for_status()
+            return resp
+        except TokenExpiredError:
+            self.logger.debug('TokenExpiredError encountered')
 
+            if '_do_http_method_token_refreshes' not in kwargs.keys():
+                kwargs['_do_http_method_token_refreshes'] = 1
+            else:
+                kwargs['_do_http_method_token_refreshes'] += 1
+                if kwargs['_do_http_method_token_refreshes'] > 3:
+                    raise Exception('Exhausted token refreshes')
+
+            self._generate_access_token()
             return self._do_http_method(method, request_path, **kwargs)
         except TimeoutError as e:
             self.logger.error(f'TimeoutError encountered: {e}')
@@ -77,17 +88,16 @@ class Oauth2ApiClient:
         """
         Creates an authenticated a OAuth2Session instance for later requests
         """
+        client = BackendApplicationClient(client_id=self.client_id)
+        self.oauth_client = OAuth2Session(client=client)
         self._generate_access_token()
-        self.oauth_client = OAuth2Session(self.client_id, token=self.token)
 
     def _generate_access_token(self):
         """
         Fetch and store a fresh token
         """
-        client = BackendApplicationClient(client_id=self.client_id)
-        oauth = OAuth2Session(client=client)
         self.logger.debug(f'Refreshing token via @{self.token_url}')
-        self.token = oauth.fetch_token(
+        self.oauth_client.fetch_token(
             token_url=self.token_url,
             client_id=self.client_id,
             client_secret=self.client_secret
