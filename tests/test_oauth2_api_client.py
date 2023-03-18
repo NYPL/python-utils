@@ -5,7 +5,7 @@ import pytest
 from requests_oauthlib import OAuth2Session
 from requests import HTTPError
 
-from nypl_py_utils import Oauth2ApiClient
+from nypl_py_utils import (Oauth2ApiClient, Oauth2ApiClientError)
 
 _TOKEN_RESPONSE = {
     'access_token': 'super-secret-token',
@@ -110,3 +110,28 @@ class TestOauth2ApiClient:
 
         with pytest.raises(HTTPError):
             test_instance._do_http_method('GET', 'foo')
+
+    def test_token_refresh_failure_raises_error(self, requests_mock,
+            test_instance, token_server_post):
+        """
+        Failure to fetch a token can raise a number of errors including:
+         - requests.exceptions.HTTPError for invalid access_token
+         - oauthlib.oauth2.rfc6749.errors.InvalidClientError for invalid
+           credentials
+         - oauthlib.oauth2.rfc6749.errors.MissingTokenError for failure to
+           fetch a token
+        One error that can arise from this client itself is failure to fetch
+        a new valid token in response to token expiration. This test asserts
+        that the client will not allow more than successive 3 retries.
+        """
+        requests_mock.get(f'{BASE_URL}/foo', json={'foo': 'bar'})
+
+        token_response = dict(_TOKEN_RESPONSE)
+        token_response['expires_in'] = 0
+        token_server_post = requests_mock\
+            .post(TOKEN_URL, text=json.dumps(token_response))
+
+        with pytest.raises(Oauth2ApiClientError):
+            test_instance._do_http_method('GET', 'foo')
+        # Expect 1 initial token fetch, plus 3 retries:
+        assert len(token_server_post.request_history) == 4

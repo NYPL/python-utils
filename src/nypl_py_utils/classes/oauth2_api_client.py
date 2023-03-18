@@ -71,12 +71,12 @@ class Oauth2ApiClient:
         except TokenExpiredError:
             self.logger.debug('TokenExpiredError encountered')
 
-            if '_do_http_method_token_refreshes' not in kwargs.keys():
-                kwargs['_do_http_method_token_refreshes'] = 1
-            else:
-                kwargs['_do_http_method_token_refreshes'] += 1
-                if kwargs['_do_http_method_token_refreshes'] > 3:
-                    raise Exception('Exhausted token refreshes')
+            # Raise error after 3 successive token refreshes
+            kwargs['_do_http_method_token_refreshes'] = \
+                kwargs.get('_do_http_method_token_refreshes', 0) + 1
+            if kwargs['_do_http_method_token_refreshes'] > 3:
+                raise Oauth2ApiClientError('Exhausted token refreshes') \
+                    from None
 
             self._generate_access_token()
             return self._do_http_method(method, request_path, **kwargs)
@@ -102,3 +102,8 @@ class Oauth2ApiClient:
             client_id=self.client_id,
             client_secret=self.client_secret
         )
+
+
+class Oauth2ApiClientError(Exception):
+    def __init__(self, message=None):
+        self.message = message
