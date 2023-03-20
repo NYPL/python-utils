@@ -111,8 +111,8 @@ class TestOauth2ApiClient:
         with pytest.raises(HTTPError):
             test_instance._do_http_method('GET', 'foo')
 
-    def test_token_refresh_failure_raises_error(self, requests_mock,
-            test_instance, token_server_post):
+    def test_token_refresh_failure_raises_error(
+            self, requests_mock, test_instance, token_server_post):
         """
         Failure to fetch a token can raise a number of errors including:
          - requests.exceptions.HTTPError for invalid access_token
