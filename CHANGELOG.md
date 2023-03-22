@@ -1,6 +1,7 @@
 # Changelog
 
-## v1.0.0 - 3/16/23
+## v1.0.0 - 3/22/23
+- Improve Oauth2ApiClient token refresh and method responses
 - Create separate PostgreSQLClient and PostgreSQLPoolClient classes
 - Update PostgreSQL and MySQL clients to accept write queries implicitly
 - Update RedshiftClient to ensure SSL is being used
