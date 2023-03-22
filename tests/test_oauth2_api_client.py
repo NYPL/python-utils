@@ -5,7 +5,8 @@ import pytest
 from requests_oauthlib import OAuth2Session
 from requests import HTTPError
 
-from nypl_py_utils.classes.oauth2_api_client import (Oauth2ApiClient, Oauth2ApiClientError)
+from nypl_py_utils.classes.oauth2_api_client import (Oauth2ApiClient,
+                                                     Oauth2ApiClientError)
 
 _TOKEN_RESPONSE = {
     'access_token': 'super-secret-token',
