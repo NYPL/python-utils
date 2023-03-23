@@ -1,7 +1,7 @@
 import pytest
 
 from base64 import b64encode
-from nypl_py_utils import KmsClient, KmsClientError
+from nypl_py_utils.classes.kms_client import KmsClient, KmsClientError
 
 _TEST_ENCRYPTED_VALUE = b64encode(b'test-encrypted-value')
 _TEST_DECRYPTION = {

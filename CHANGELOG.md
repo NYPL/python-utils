@@ -1,11 +1,11 @@
 # Changelog
 
-## v0.0.9 - 3/16/23
+## v1.0.0 - 3/22/23
 - Improve Oauth2ApiClient token refresh and method responses
-
-## v0.0.8 - 3/3/23
-- Pass in all kwargs from PostgreSQLClient to ConnectionPool so that all ConnectionPool settings
-can be set from the wrapper
+- Create separate PostgreSQLClient and PostgreSQLPoolClient classes
+- Update PostgreSQL and MySQL clients to accept write queries implicitly
+- Update RedshiftClient to ensure SSL is being used
+- Separate dependencies to slim down package installation
 
 ## v0.0.7 - 3/1/23
 - Added Oauth2ApiClient for oauth2 authenticated calls to our Platform API and Sierra

@@ -1,6 +1,7 @@
 import pytest
 
-from nypl_py_utils import RedshiftClient, RedshiftClientError
+from nypl_py_utils.classes.redshift_client import (
+    RedshiftClient, RedshiftClientError)
 
 
 class TestRedshiftClient:
@@ -19,7 +20,8 @@ class TestRedshiftClient:
         mock_redshift_conn.assert_called_once_with(host='test_host',
                                                    database='test_database',
                                                    user='test_user',
-                                                   password='test_password')
+                                                   password='test_password',
+                                                   sslmode='verify-full')
 
     def test_execute_query(self, mock_redshift_conn, test_instance, mocker):
         test_instance.connect()
