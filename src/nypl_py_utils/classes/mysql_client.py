@@ -15,8 +15,19 @@ class MySQLClient:
         self.user = user
         self.password = password
 
-    def connect(self):
-        """Connects to a MySQL database using the given credentials"""
+    def connect(self, **kwargs):
+        """
+        Connects to a MySQL database using the given credentials.
+
+        Keyword args can be passed into the connection to set certain options.
+        All possible arguments can be found here:
+        https://dev.mysql.com/doc/connector-python/en/connector-python-connectargs.html.
+
+        Common arguments include:
+            autocommit: bool
+                Whether to automatically commit each query rather than running
+                them as part of a transaction. By default False.
+        """
         self.logger.info('Connecting to {} database'.format(self.database))
         try:
             self.conn = mysql.connector.connect(
@@ -24,7 +35,8 @@ class MySQLClient:
                 port=self.port,
                 database=self.database,
                 user=self.user,
-                password=self.password)
+                password=self.password,
+                **kwargs)
         except mysql.connector.Error as e:
             self.logger.error(
                 'Error connecting to {name} database: {error}'.format(
@@ -33,8 +45,7 @@ class MySQLClient:
                 'Error connecting to {name} database: {error}'.format(
                     name=self.database, error=e)) from None
 
-    def execute_query(self, query, is_write_query=False, query_params=None,
-                      dictionary=False):
+    def execute_query(self, query, query_params=None, **kwargs):
         """
         Executes an arbitrary query against the given database connection.
 
@@ -42,28 +53,30 @@ class MySQLClient:
         ----------
         query: str
             The query to execute
-        is_write_query: bool, optional
-            Whether or not the query is writing to the database, in which case
-            the transaction needs to be committed and None should be returned
         query_params: sequence, optional
             The values to be used in a parameterized query
-        dictionary: bool, optional
-            Whether the data will be returned as a dictionary. Defaults to
-            False, which means the data is returned as a list of tuples.
+        kwargs:
+            All possible arguments can be found here:
+            https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlconnection-cursor.html.
+
+            Common arguments include:
+                dictionary: bool
+                    Whether the data will be returned as a dictionary. Defaults
+                    to False, meaning the data is returned as a list of tuples.
 
         Returns
         -------
         None or sequence
-            None if is_write_query is True. A list of either tuples or
-            dictionaries (based on the dictionary input) if is_write_query is
-            False.
+            None if the cursor has nothing to return. A list of either tuples
+            or dictionaries (based on the dictionary input) if there's
+            something to return (even if the result set is empty).
         """
         self.logger.info('Querying {} database'.format(self.database))
         self.logger.debug('Executing query {}'.format(query))
         try:
-            cursor = self.conn.cursor(dictionary=dictionary)
+            cursor = self.conn.cursor(**kwargs)
             cursor.execute(query, query_params)
-            if is_write_query:
+            if cursor.description is None:
                 self.conn.commit()
                 return None
             else:

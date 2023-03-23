@@ -1,6 +1,6 @@
 import pytest
 
-from nypl_py_utils import MySQLClient, MySQLClientError
+from nypl_py_utils.classes.mysql_client import MySQLClient, MySQLClientError
 
 
 class TestMySQLClient:
@@ -26,45 +26,26 @@ class TestMySQLClient:
         test_instance.connect()
 
         mock_cursor = mocker.MagicMock()
+        mock_cursor.description = [('description', None, None)]
         mock_cursor.fetchall.return_value = [(1, 2, 3), ('a', 'b', 'c')]
         test_instance.conn.cursor.return_value = mock_cursor
 
         assert test_instance.execute_query(
             'test query') == [(1, 2, 3), ('a', 'b', 'c')]
-        test_instance.conn.cursor.called_once_with(dictionary=False)
         mock_cursor.execute.assert_called_once_with('test query', None)
-        mock_cursor.close.assert_called_once()
-
-    def test_execute_dictionary_read_query(self, mock_mysql_conn,
-                                           test_instance, mocker):
-        test_instance.connect()
-
-        mock_cursor = mocker.MagicMock()
-        mock_cursor.fetchall.return_value = [
-            {'col1': 1, 'col2': 'a'},
-            {'col1': 2, 'col2': 'b'},
-            {'col1': 3, 'col2': 'c'}]
-        test_instance.conn.cursor.return_value = mock_cursor
-
-        assert test_instance.execute_query(
-            'test query', dictionary=True) == [{'col1': 1, 'col2': 'a'},
-                                               {'col1': 2, 'col2': 'b'},
-                                               {'col1': 3, 'col2': 'c'}]
-        test_instance.conn.cursor.called_once_with(dictionary=True)
-        mock_cursor.execute.assert_called_once_with('test query', None)
+        test_instance.conn.commit.assert_not_called()
         mock_cursor.close.assert_called_once()
 
     def test_execute_write_query(self, mock_mysql_conn, test_instance, mocker):
         test_instance.connect()
 
         mock_cursor = mocker.MagicMock()
+        mock_cursor.description = None
         test_instance.conn.cursor.return_value = mock_cursor
 
-        assert test_instance.execute_query(
-            'test query', is_write_query=True) is None
-        test_instance.conn.cursor.called_once_with(dictionary=False)
+        assert test_instance.execute_query('test query') is None
         mock_cursor.execute.assert_called_once_with('test query', None)
-        test_instance.conn.commit.called_once()
+        test_instance.conn.commit.assert_called_once()
         mock_cursor.close.assert_called_once()
 
     def test_execute_write_query_with_params(self, mock_mysql_conn,
@@ -72,12 +53,11 @@ class TestMySQLClient:
         test_instance.connect()
 
         mock_cursor = mocker.MagicMock()
+        mock_cursor.description = None
         test_instance.conn.cursor.return_value = mock_cursor
 
         assert test_instance.execute_query(
-            'test query %s %s', is_write_query=True,
-            query_params=('a', 1)) is None
-        test_instance.conn.cursor.called_once_with(dictionary=False)
+            'test query %s %s', query_params=('a', 1)) is None
         mock_cursor.execute.assert_called_once_with('test query %s %s',
                                                     ('a', 1))
         test_instance.conn.commit.called_once()

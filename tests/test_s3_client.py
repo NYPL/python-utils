@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from nypl_py_utils import S3Client
+from nypl_py_utils.classes.s3_client import S3Client
 
 _TEST_STATE = {'key1': 'val1', 'key2': 'val2', 'key3': 'val3'}
 
