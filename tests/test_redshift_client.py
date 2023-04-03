@@ -69,11 +69,12 @@ class TestRedshiftClient:
         mock_cursor = mocker.MagicMock()
         test_instance.conn.cursor.return_value = mock_cursor
 
-        test_instance.execute_transaction(['query 1', 'query 2'])
+        test_instance.execute_transaction([('query 1', None),
+                                           ('query 2 %s %s', ('a', 1))])
         mock_cursor.execute.assert_has_calls([
             mocker.call('BEGIN TRANSACTION;'),
-            mocker.call('query 1'),
-            mocker.call('query 2'),
+            mocker.call('query 1', None),
+            mocker.call('query 2 %s %s', ('a', 1)),
             mocker.call('END TRANSACTION;')])
         test_instance.conn.commit.assert_called_once()
         mock_cursor.close.assert_called_once()
@@ -87,12 +88,13 @@ class TestRedshiftClient:
         test_instance.conn.cursor.return_value = mock_cursor
 
         with pytest.raises(RedshiftClientError):
-            test_instance.execute_transaction(['query 1', 'query 2'])
+            test_instance.execute_transaction(
+                [('query 1', None), ('query 2', None)])
 
         mock_cursor.execute.assert_has_calls([
             mocker.call('BEGIN TRANSACTION;'),
-            mocker.call('query 1'),
-            mocker.call('query 2')])
+            mocker.call('query 1', None),
+            mocker.call('query 2', None)])
         test_instance.conn.commit.assert_not_called()
         test_instance.conn.rollback.assert_called_once()
         mock_cursor.close.assert_called_once()

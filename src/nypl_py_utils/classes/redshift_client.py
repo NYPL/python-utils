@@ -80,8 +80,9 @@ class RedshiftClient:
 
         Parameters
         ----------
-        queries: list<str>
-            A list of the queries to execute in order
+        queries: list<tuple>
+            A list of tuples containing a query and the values to be used if
+            the query is parameterized (or None if it's not)
         """
         self.logger.info('Executing transaction against {} database'.format(
             self.database))
@@ -90,7 +91,7 @@ class RedshiftClient:
             cursor.execute('BEGIN TRANSACTION;')
             for query in queries:
                 self.logger.debug('Executing query {}'.format(query))
-                cursor.execute(query)
+                cursor.execute(query[0], query[1])
             cursor.execute('END TRANSACTION;')
             self.conn.commit()
         except Exception as e:
