@@ -72,6 +72,38 @@ class RedshiftClient:
         finally:
             cursor.close()
 
+    def execute_transaction(self, queries):
+        """
+        Executes a series of queries within a single transaction against the
+        given database connection. Assumes each of these queries is a write
+        query and so does not return anything.
+
+        Parameters
+        ----------
+        queries: list<str>
+            A list of the queries to execute in order
+        """
+        self.logger.info('Executing transaction against {} database'.format(
+            self.database))
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute('BEGIN TRANSACTION;')
+            for query in queries:
+                self.logger.debug('Executing query {}'.format(query))
+                cursor.execute(query)
+            cursor.execute('END TRANSACTION;')
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            self.logger.error(
+                ('Error executing {name} database transaction: {error}')
+                .format(name=self.database, error=e))
+            raise RedshiftClientError(
+                ('Error executing {name} database transaction: {error}')
+                .format(name=self.database, error=e)) from None
+        finally:
+            cursor.close()
+
     def close_connection(self):
         """Closes the database connection"""
         self.logger.debug('Closing {} database connection'.format(
