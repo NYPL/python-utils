@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.0.1 - 4/3/23
+- Add transaction support to RedshiftClient
+
 ## v1.0.0 - 3/22/23
 - Improve Oauth2ApiClient token refresh and method responses
 - Create separate PostgreSQLClient and PostgreSQLPoolClient classes
