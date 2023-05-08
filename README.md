@@ -18,6 +18,25 @@ This package contains common Python utility classes and functions.
 * Creating a logger in the appropriate format
 * Obfuscating a value using bcrypt
 
+## Usage
+```python
+# test_file.py
+from nypl_py_utils.classes.kinesis_client import KinesisClient
+from nypl_py_utils.functions.config_helper import load_env_file
+
+load_env_file(...)
+kinesis_client = KinesisClient(...)
+```
+
+```bash
+# requirements.txt
+
+# Do not use any version below 1.0.0
+# All available optional dependencies can be found in pyproject.toml.
+# See the "Managing dependencies" section below for more details.
+nypl-py-utils[kinesis-client,config-helper]==1.0.1
+```
+
 ## Developing locally
 In order to use the local version of the package instead of the global version, use a virtual environment. To set up a virtual environment and install all the necessary dependencies, run:
 
