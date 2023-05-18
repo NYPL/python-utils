@@ -8,6 +8,7 @@ This package contains common Python utility classes and functions.
 * Decrypting values with KMS
 * Encoding and decoding records using a given Avro schema
 * Connecting to and querying a MySQL database
+* Connecting to and querying a PostgreSQL database
 * Connecting to and querying a PostgreSQL database using a connection pool
 * Connecting to and querying Redshift
 * Making requests to the Oauth2 authenticated APIs such as NYPL Platform API and Sierra
@@ -17,6 +18,25 @@ This package contains common Python utility classes and functions.
 * Creating a logger in the appropriate format
 * Obfuscating a value using bcrypt
 
+## Usage
+```python
+# test_file.py
+from nypl_py_utils.classes.kinesis_client import KinesisClient
+from nypl_py_utils.functions.config_helper import load_env_file
+
+load_env_file(...)
+kinesis_client = KinesisClient(...)
+```
+
+```bash
+# requirements.txt
+
+# Do not use any version below 1.0.0
+# All available optional dependencies can be found in pyproject.toml.
+# See the "Managing dependencies" section below for more details.
+nypl-py-utils[kinesis-client,config-helper]==1.0.1
+```
+
 ## Developing locally
 In order to use the local version of the package instead of the global version, use a virtual environment. To set up a virtual environment and install all the necessary dependencies, run:
 
@@ -25,11 +45,16 @@ python3 -m venv testenv
 source testenv/bin/activate
 pip install --upgrade pip
 pip install .
-pip install '.[tests]'
+pip install '.[development]'
 deactivate && source testenv/bin/activate
 ```
 
-Add any new dependencies required by code in the `nypl_py_utils` directory to the `dependencies` section of `pyproject.toml`. Add dependencies only required by code in the `tests` directory to the `[project.optional-dependencies]` section.
+## Managing dependencies
+In order to prevent dependency bloat, this package has no required dependencies. Instead, each class and helper file has its own optional dependency set. For instance, if an app needs to use the KMS client and the obfuscation helper, it should add `nypl-py-utils[kms-client, obfuscation-helper]` to the app's requirements. This way, only the required dependencies are installed.
+
+When a new client or helper file is created, a new optional dependency set should be added to `pyproject.toml`. The `development` dependency set, which includes all the dependencies required by all of the classes and tests, should also be updated.
+
+The optional dependency sets also give the developer the option to manually list out the dependencies of the clients rather than relying upon what the package thinks is required, which can be beneficial in certain circumstances. For instance, AWS lambda functions come with `boto3` and `botocore` pre-installed, so it's not necessary to include these (rather hefty) dependencies in the lambda deployment package.
 
 ### Troubleshooting
 If running `main.py` in this virtual environment produces the following error:

@@ -1,7 +1,7 @@
 import os
 import yaml
 
-from nypl_py_utils import KmsClient
+from nypl_py_utils.classes.kms_client import KmsClient
 from nypl_py_utils.functions.log_helper import create_log
 
 logger = create_log('config_helper')
@@ -15,6 +15,14 @@ def load_env_file(run_type, file_string):
 
     It requires the YAML file to be split into a 'PLAINTEXT_VARIABLES' section
     and an 'ENCRYPTED_VARIABLES' section.
+
+    Parameters
+        ----------
+        run_type: str
+            The name of the config file to use, e.g. 'devel'
+        file_string: str
+            The path to the config files with the filename as a variable to be
+            interpolated, e.g. 'config/{}.yaml'
     """
 
     env_dict = None

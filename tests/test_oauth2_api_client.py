@@ -1,32 +1,37 @@
 import os
+import time
 import json
 import pytest
 from requests_oauthlib import OAuth2Session
+from requests import HTTPError
 
-from nypl_py_utils import Oauth2ApiClient
-# from requests.exceptions import ConnectTimeout
+from nypl_py_utils.classes.oauth2_api_client import (Oauth2ApiClient,
+                                                     Oauth2ApiClientError)
 
 _TOKEN_RESPONSE = {
     'access_token': 'super-secret-token',
-    'expires_in': 3600,
+    'expires_in': 1,
     'token_type': 'Bearer',
     'scope': ['offline_access', 'openid', 'login:staff', 'admin'],
-    'id_token': 'super-secret-token',
-    'expires_at': 1677599823.3180869
+    'id_token': 'super-secret-token'
 }
 
 BASE_URL = 'https://example.com/api/v0.1'
+TOKEN_URL = 'https://oauth.example.com/oauth/token'
 
 
 class TestOauth2ApiClient:
 
     @pytest.fixture
-    def test_instance(self, requests_mock):
-        token_url = 'https://oauth.example.com/oauth/token'
-        requests_mock.post(token_url, text=json.dumps(_TOKEN_RESPONSE))
+    def token_server_post(self, requests_mock):
+        token_url = TOKEN_URL
+        token_response = dict(_TOKEN_RESPONSE)
+        return requests_mock.post(token_url, text=json.dumps(token_response))
 
+    @pytest.fixture
+    def test_instance(self, requests_mock):
         return Oauth2ApiClient(base_url=BASE_URL,
-                               token_url=token_url,
+                               token_url=TOKEN_URL,
                                client_id='clientid',
                                client_secret='clientsecret'
                                )
@@ -50,42 +55,84 @@ class TestOauth2ApiClient:
         for key, value in env.items():
             os.environ[key] = ''
 
-    def test_generate_access_token(self, test_instance):
+    def test_generate_access_token(self, test_instance, token_server_post):
+        test_instance._create_oauth_client()
         test_instance._generate_access_token()
-        assert test_instance.token['access_token']\
+        assert test_instance.oauth_client.token['access_token']\
             == _TOKEN_RESPONSE['access_token']
 
-    def test_create_oauth_client(self, test_instance):
+    def test_create_oauth_client(self, token_server_post, test_instance):
         test_instance._create_oauth_client()
         assert type(test_instance.oauth_client) is OAuth2Session
 
-    def test_do_http_method(self, requests_mock, test_instance):
+    def test_do_http_method(self, requests_mock, token_server_post,
+                            test_instance):
+        requests_mock.get(f'{BASE_URL}/foo', json={'foo': 'bar'})
+
         requests_mock.get(f'{BASE_URL}/foo', json={'foo': 'bar'})
         resp = test_instance._do_http_method('GET', 'foo')
-        assert resp == {'foo': 'bar'}
+        assert resp.status_code == 200
+        assert resp.json() == {'foo': 'bar'}
 
-    def test_token_expiration(self, requests_mock, test_instance):
+    def test_token_expiration(self, requests_mock, test_instance,
+                              token_server_post, mocker):
         api_get_mock = requests_mock.get(f'{BASE_URL}/foo',
                                          json={'foo': 'bar'})
 
-        # Perform first request to auto-authenticate:
-        resp = test_instance._do_http_method('GET', 'foo')
+        # Perform first request:
+        test_instance._do_http_method('GET', 'foo')
+        # Expect this first call triggered a single token server call:
+        assert len(token_server_post.request_history) == 1
+        # And the GET request used the supplied Bearer token:
         assert api_get_mock.request_history[0]._request\
             .headers['Authorization'] == 'Bearer super-secret-token'
 
-        # Emulate token expiration:
-        test_instance.token['expires_at'] = 0
+        # The token obtained above expires in 1s, so wait out expiration:
+        time.sleep(1.1)
 
-        token_post_mock = requests_mock.post(
-            test_instance.token_url,
-            text=json.dumps(_TOKEN_RESPONSE)
-        )
+        # Register new token response:
+        second_token_response = dict(_TOKEN_RESPONSE)
+        second_token_response['id_token'] = 'super-secret-second-token'
+        second_token_response['access_token'] = 'super-secret-second-token'
+        second_token_server_post = requests_mock\
+            .post(TOKEN_URL, text=json.dumps(second_token_response))
 
-        # Perform second request, which should detect token expiration and
-        # re-authenticate:
-        resp = test_instance._do_http_method('GET', 'foo')
-
-        assert token_post_mock.called is True
+        # Perform second request:
+        test_instance._do_http_method('GET', 'foo')
+        # Expect a call on the second token server:
+        assert len(second_token_server_post.request_history) == 1
+        # Expect the second GET request to carry the new Bearer token:
         assert api_get_mock.request_history[1]._request\
-            .headers['Authorization'] == 'Bearer super-secret-token'
-        assert resp == {'foo': 'bar'}
+            .headers['Authorization'] == 'Bearer super-secret-second-token'
+
+    def test_error_status_raises_error(self, requests_mock, test_instance,
+                                       token_server_post):
+        requests_mock.get(f'{BASE_URL}/foo', status_code=400)
+
+        with pytest.raises(HTTPError):
+            test_instance._do_http_method('GET', 'foo')
+
+    def test_token_refresh_failure_raises_error(
+            self, requests_mock, test_instance, token_server_post):
+        """
+        Failure to fetch a token can raise a number of errors including:
+         - requests.exceptions.HTTPError for invalid access_token
+         - oauthlib.oauth2.rfc6749.errors.InvalidClientError for invalid
+           credentials
+         - oauthlib.oauth2.rfc6749.errors.MissingTokenError for failure to
+           fetch a token
+        One error that can arise from this client itself is failure to fetch
+        a new valid token in response to token expiration. This test asserts
+        that the client will not allow more than successive 3 retries.
+        """
+        requests_mock.get(f'{BASE_URL}/foo', json={'foo': 'bar'})
+
+        token_response = dict(_TOKEN_RESPONSE)
+        token_response['expires_in'] = 0
+        token_server_post = requests_mock\
+            .post(TOKEN_URL, text=json.dumps(token_response))
+
+        with pytest.raises(Oauth2ApiClientError):
+            test_instance._do_http_method('GET', 'foo')
+        # Expect 1 initial token fetch, plus 3 retries:
+        assert len(token_server_post.request_history) == 4
