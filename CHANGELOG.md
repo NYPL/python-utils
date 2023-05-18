@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.0.9 - 5/18/23
+- Add research_catalog_identifier_helper function
+
 ## v0.0.8 - 3/3/23
 - Pass in all kwargs from PostgreSQLClient to ConnectionPool so that all ConnectionPool settings
 can be set from the wrapper
