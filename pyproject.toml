@@ -63,6 +63,9 @@ config-helper = [
 obfuscation-helper = [
     "bcrypt>=4.0.1"
 ]
+research-catalog-identifier-helper = [
+    "requests>=2.28.1"
+]
 development = [
     "nypl_py_utils[avro-encoder,kinesis-client,kms-client,mysql-client,oauth2-api-client,postgresql-client,postgresql-pool-client,redshift-client,s3-client,config-helper,obfuscation-helper]",
     "flake8>=6.0.0",
