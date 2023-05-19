@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.0.2 - 5/18/23
+- Add research_catalog_identifier_helper function
+
 ## v1.0.1 - 4/3/23
 - Add transaction support to RedshiftClient
 
