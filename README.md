@@ -17,6 +17,7 @@ This package contains common Python utility classes and functions.
 * Reading a YAML config file and putting the contents in os.environ
 * Creating a logger in the appropriate format
 * Obfuscating a value using bcrypt
+* Parsing/building Research Catalog identifiers
 
 ## Usage
 ```python
@@ -81,6 +82,7 @@ This repo uses the [Main-QA-Production](https://github.com/NYPL/engineering-gene
 - Cut a feature branch off of `main`
 - Commit changes to your feature branch
 - File a pull request against `main` and assign a reviewer (who must be an owner)
+  - Include relevant updates to pyproject.toml and README
   - In order for the PR to be accepted, it must pass all unit tests, have no lint issues, and update the CHANGELOG (or contain the `Skip-Changelog` label in GitHub)
 - After the PR is accepted, merge into `main`
 - Merge `main` > `qa`
