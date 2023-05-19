@@ -58,7 +58,22 @@ When a new client or helper file is created, a new optional dependency set shoul
 The optional dependency sets also give the developer the option to manually list out the dependencies of the clients rather than relying upon what the package thinks is required, which can be beneficial in certain circumstances. For instance, AWS lambda functions come with `boto3` and `botocore` pre-installed, so it's not necessary to include these (rather hefty) dependencies in the lambda deployment package.
 
 ### Troubleshooting
-If running `main.py` in this virtual environment produces the following error:
+#### Using PostgreSQLClient in an AWS Lambda
+Because `psycopg` requires a statically linked version of the `libpq` library, the `PostgreSQLClient` cannot be installed as-is in an AWS Lambda function. Instead, it must be packaged as follows:
+```bash
+pip install --target ./package nypl-py-utils[postgresql-client]==1.0.1
+
+pip install \
+    --platform manylinux2014_x86_64 \
+    --target=./package \
+    --implementation cp \
+    --python 3.9 \
+    --only-binary=:all: --upgrade \
+    'psycopg[binary]'
+```
+
+#### Using PostgreSQLClient locally
+If using the `PostgreSQLClient` produces the following error locally:
 ```
 ImportError: no pq wrapper available.
 Attempts made:
@@ -68,7 +83,7 @@ Attempts made:
 ```
 
 then try running:
-```
+```bash
 pip uninstall psycopg
 pip install "psycopg[c]"
 ```
