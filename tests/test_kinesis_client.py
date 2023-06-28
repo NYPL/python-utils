@@ -26,6 +26,7 @@ class TestKinesisClient:
         MOCK_RECORDS = [b'a', b'b', b'c', b'd', b'e']
         mocked_send_method = mocker.patch(
             'nypl_py_utils.classes.kinesis_client.KinesisClient._send_kinesis_format_records')  # noqa: E501
+        mock_sleep = mocker.patch('time.sleep', return_value=None)
 
         test_instance.send_records(MOCK_RECORDS)
         mocked_send_method.assert_has_calls([
@@ -34,6 +35,25 @@ class TestKinesisClient:
             mocker.call([_TEST_KINESIS_RECORDS[2],
                         _TEST_KINESIS_RECORDS[3]], 1),
             mocker.call([_TEST_KINESIS_RECORDS[4]], 1)])
+        mock_sleep.assert_not_called()
+
+    def test_send_records_with_pause(self, mocker):
+        mocker.patch('boto3.client')
+        test_instance = KinesisClient('test_stream_arn', 500)
+
+        MOCK_RECORDS = [b'a'] * 2200
+        mocked_send_method = mocker.patch(
+            'nypl_py_utils.classes.kinesis_client.KinesisClient._send_kinesis_format_records')  # noqa: E501
+        mock_sleep = mocker.patch('time.sleep', return_value=None)
+
+        test_instance.send_records(MOCK_RECORDS)
+        mocked_send_method.assert_has_calls([
+            mocker.call([_TEST_KINESIS_RECORDS[0]]*500, 1),
+            mocker.call([_TEST_KINESIS_RECORDS[0]]*500, 1),
+            mocker.call([_TEST_KINESIS_RECORDS[0]]*500, 1),
+            mocker.call([_TEST_KINESIS_RECORDS[0]]*500, 1),
+            mocker.call([_TEST_KINESIS_RECORDS[0]]*200, 1)])
+        assert mock_sleep.call_count == 2
 
     def test_send_kinesis_format_records(self, test_instance):
         test_instance.kinesis_client.put_records.return_value = {
