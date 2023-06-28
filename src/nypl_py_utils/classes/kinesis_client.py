@@ -39,14 +39,22 @@ class KinesisClient:
     def send_records(self, records):
         """
         Sends list of records (usually represented as Avro-encoded byte
-        strings) to Kinesis in batches of size self.batch_size.
+        strings) to Kinesis in batches of size self.batch_size. Kinesis can
+        only handle 1000 records per second, so this method waits a second
+        between each 1000 records.
         """
+        records_sent_since_pause = 0
         for i in range(0, len(records), self.batch_size):
             encoded_batch = records[i:i + self.batch_size]
             kinesis_records = [{'Data': record, 'PartitionKey':
                                 str(int(time.time() * 1000000000))}
                                for record in encoded_batch]
+
+            if records_sent_since_pause + len(encoded_batch) > 1000:
+                records_sent_since_pause = 0
+                time.sleep(1)
             self._send_kinesis_format_records(kinesis_records, 1)
+            records_sent_since_pause += len(encoded_batch)
 
     def _send_kinesis_format_records(self, kinesis_records, call_count):
         """

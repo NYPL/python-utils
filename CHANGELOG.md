@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.0.4 - 6/28/23
+- Enforce Kinesis stream 1000 records/second write limit
+
 ## v1.0.3 - 5/19/23
 - Add research_catalog_identifier_helper function
 
