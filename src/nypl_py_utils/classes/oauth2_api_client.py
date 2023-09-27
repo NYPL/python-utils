@@ -1,4 +1,6 @@
 import os
+from time import sleep
+from requests.models import Response
 from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError
 from requests_oauthlib import OAuth2Session
 from nypl_py_utils.functions.log_helper import create_log
@@ -11,7 +13,7 @@ class Oauth2ApiClient:
     """
 
     def __init__(self, client_id=None, client_secret=None, base_url=None,
-                 token_url=None):
+                 token_url=None, with_retries=False):
         self.client_id = client_id \
             or os.environ.get('NYPL_API_CLIENT_ID', None)
         self.client_secret = client_secret \
@@ -25,11 +27,29 @@ class Oauth2ApiClient:
 
         self.logger = create_log('oauth2_api_client')
 
+        self.with_retries = with_retries
+
     def get(self, request_path, **kwargs):
         """
         Issue an HTTP GET on the given request_path
         """
-        return self._do_http_method('GET', request_path, **kwargs)
+        resp = self._do_http_method('GET', request_path, **kwargs)
+        if resp.json() is None and self.with_retries is True:
+            retries = \
+                kwargs.get('retries', 0) + 1
+            if retries < 3:
+                self.logger.warning(
+                    f'Retrying get request due to empty response from\
+                         Oauth2 Client. Retry #{retries}')
+                sleep(pow(2, retries - 1))
+                kwargs['retries'] = retries
+                resp = self.get(request_path, **kwargs)
+            else:
+                resp = Response()
+                resp.message = 'Oauth2 Client: Request failed after 3 \
+                        empty responses received from Oauth2 Client'
+                resp.status_code = 500
+        return resp
 
     def post(self, request_path, json, **kwargs):
         """
@@ -79,7 +99,7 @@ class Oauth2ApiClient:
                     from None
 
             self._generate_access_token()
-            return self._do_http_method(method, request_path, **kwargs)
+            return self._do_http_method(method, request_path, **kwargs).json()
 
     def _create_oauth_client(self):
         """
