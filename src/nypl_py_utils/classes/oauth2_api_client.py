@@ -40,7 +40,8 @@ class Oauth2ApiClient:
             if retries < 3:
                 self.logger.warning(
                     f'Retrying get request due to empty response from\
-                         Oauth2 Client using path: {request_path}. Retry #{retries}')
+                         Oauth2 Client using path: {request_path}. \
+                         Retry #{retries}')
                 sleep(pow(2, retries - 1))
                 kwargs['retries'] = retries
                 resp = self.get(request_path, **kwargs)

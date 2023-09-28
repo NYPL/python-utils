@@ -167,11 +167,13 @@ class TestOauth2ApiClient:
         assert get_spy.call_count == 3
         assert resp.status_code == 500
 
-    def test_http_retry_success(self, requests_mock, test_instance_with_retries,
+    def test_http_retry_success(self, requests_mock,
+                                test_instance_with_retries,
                                 token_server_post, mocker):
         mocker.patch.object(test_instance_with_retries, '_do_http_method',
                             side_effect=[MockEmptyResponse(empty=True),
-                                         MockEmptyResponse(empty=False, status_code=200)])
+                                         MockEmptyResponse(empty=False,
+                                                           status_code=200)])
         get_spy = mocker.spy(test_instance_with_retries, 'get')
         resp = test_instance_with_retries.get('spaghetti')
         assert get_spy.call_count == 2
