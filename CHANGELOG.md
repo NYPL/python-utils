@@ -1,4 +1,13 @@
 # Changelog
+## v1.1.0
+- Add retries for empty responses in oauth2 client. This was added to address a known quirk in the Sierra API where this response is returned:
+```
+> GET / HTTP/1.1
+> Host: ilsstaff.nypl.org
+> User-Agent: curl/7.64.1
+> Accept: */*
+> 
+```
 
 ## v1.0.1 - 4/3/23
 - Add transaction support to RedshiftClient
