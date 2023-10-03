@@ -9,7 +9,10 @@ from nypl_py_utils.functions.log_helper import create_log
 class Oauth2ApiClient:
     """
     Client for interacting with an Oauth2 authenticated API such as NYPL's
-    Platform API endpoints
+    Platform API endpoints. Note with_retries is a boolean flag which
+    determines if empty get requests will be retried 3 times or until
+    they are successful. This is to address a known issue with the Sierra
+    API where empty responses are returned intermittently.
     """
 
     def __init__(self, client_id=None, client_secret=None, base_url=None,
