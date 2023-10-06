@@ -20,6 +20,18 @@ BASE_URL = 'https://example.com/api/v0.1'
 TOKEN_URL = 'https://oauth.example.com/oauth/token'
 
 
+class MockEmptyResponse:
+    def __init__(self, empty, status_code=None):
+        self.status_code = status_code
+        self.empty = empty
+
+    def json(self):
+        if self.empty:
+            return None
+        else:
+            return 'success'
+
+
 class TestOauth2ApiClient:
 
     @pytest.fixture
@@ -34,6 +46,15 @@ class TestOauth2ApiClient:
                                token_url=TOKEN_URL,
                                client_id='clientid',
                                client_secret='clientsecret'
+                               )
+
+    @pytest.fixture
+    def test_instance_with_retries(self, requests_mock):
+        return Oauth2ApiClient(base_url=BASE_URL,
+                               token_url=TOKEN_URL,
+                               client_id='clientid',
+                               client_secret='clientsecret',
+                               with_retries=True
                                )
 
     def test_uses_env_vars(self):
@@ -136,3 +157,24 @@ class TestOauth2ApiClient:
             test_instance._do_http_method('GET', 'foo')
         # Expect 1 initial token fetch, plus 3 retries:
         assert len(token_server_post.request_history) == 4
+
+    def test_http_retry_fail(self, requests_mock, test_instance_with_retries,
+                             token_server_post, mocker):
+        mocker.patch.object(test_instance_with_retries, '_do_http_method',
+                            return_value=MockEmptyResponse(empty=True))
+        get_spy = mocker.spy(test_instance_with_retries, 'get')
+        resp = test_instance_with_retries.get('spaghetti')
+        assert get_spy.call_count == 3
+        assert resp.status_code == 500
+
+    def test_http_retry_success(self, requests_mock,
+                                test_instance_with_retries,
+                                token_server_post, mocker):
+        mocker.patch.object(test_instance_with_retries, '_do_http_method',
+                            side_effect=[MockEmptyResponse(empty=True),
+                                         MockEmptyResponse(empty=False,
+                                                           status_code=200)])
+        get_spy = mocker.spy(test_instance_with_retries, 'get')
+        resp = test_instance_with_retries.get('spaghetti')
+        assert get_spy.call_count == 2
+        assert resp.json() == 'success'
