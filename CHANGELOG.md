@@ -8,6 +8,7 @@
 > Accept: */*
 > 
 ```
+- update readme
 
 ## v1.0.4 - 6/28/23
 - Enforce Kinesis stream 1000 records/second write limit

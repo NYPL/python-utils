@@ -101,9 +101,11 @@ This repo uses the [Main-QA-Production](https://github.com/NYPL/engineering-gene
   - In order for the PR to be accepted, it must pass all unit tests, have no lint issues, and update the CHANGELOG (or contain the `Skip-Changelog` label in GitHub)
 - After the PR is accepted, merge into `main`
 - Merge `main` > `qa`
-- Deploy app to QA on GitHub and confirm it works
+- [create a new release](https://github.com/NYPL/python-utils/releases) and tag it `qa-vX.X.X`
+  -this will trigger a deployment as a Test PyPI package for QA purposes [here](https://test.pypi.org/project/nypl-py-utils/).
 - Merge `qa` > `production`
-- Deploy app to production on GitHub and confirm it works
+- Create a release and tag it `production-vX.X.X`
+  - This will trigger a production deployment as a PyPI package [here](https://pypi.org/project/nypl-py-utils/)
 
 ## Deployment
 The utils repo is deployed as a PyPI package [here](https://pypi.org/project/nypl-py-utils/) and as a Test PyPI package for QA purposes [here](https://test.pypi.org/project/nypl-py-utils/). In order to be deployed, the version listed in `pyproject.toml` **must be updated**. To deploy to Test PyPI, [create a new release](https://github.com/NYPL/python-utils/releases) in GitHub and tag it `qa-vX.X.X`. The GitHub Actions deploy-qa workflow will then build and publish the package. To deploy to production PyPI, create a release and tag it `production-vX.X.X`.
