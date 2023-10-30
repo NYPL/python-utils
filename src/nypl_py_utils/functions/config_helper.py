@@ -16,12 +16,13 @@ def load_env_file(run_type, file_string):
     exported into os.environ as a json string and should be loaded as such.
 
     It requires the YAML file to be split into a 'PLAINTEXT_VARIABLES' section
-    and an 'ENCRYPTED_VARIABLES' section.
+    and an 'ENCRYPTED_VARIABLES' section. See config/sample.yaml for an example
+    config file.
 
     Parameters
         ----------
         run_type: str
-            The name of the config file to use, e.g. 'devel'
+            The name of the config file to use, e.g. 'sample'
         file_string: str
             The path to the config files with the filename as a variable to be
             interpolated, e.g. 'config/{}.yaml'
