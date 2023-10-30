@@ -1,5 +1,8 @@
 # Changelog
-## v1.1.0
+## v1.1.2
+- Update config_helper to accept list environment variables
+
+## v1.1.0/v1.1.1
 - Add retries for empty responses in oauth2 client. This was added to address a known quirk in the Sierra API where this response is returned:
 ```
 > GET / HTTP/1.1
@@ -8,6 +11,7 @@
 > Accept: */*
 > 
 ```
+- Due to an accidental deployment, v1.1.0 and v1.1.1 were both released but are identical
 
 ## v1.0.4 - 6/28/23
 - Enforce Kinesis stream 1000 records/second write limit

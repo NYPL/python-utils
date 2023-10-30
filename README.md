@@ -35,19 +35,19 @@ kinesis_client = KinesisClient(...)
 # Do not use any version below 1.0.0
 # All available optional dependencies can be found in pyproject.toml.
 # See the "Managing dependencies" section below for more details.
-nypl-py-utils[kinesis-client,config-helper]==1.0.4
+nypl-py-utils[kinesis-client,config-helper]==1.1.2
 ```
 
 ## Developing locally
 In order to use the local version of the package instead of the global version, use a virtual environment. To set up a virtual environment and install all the necessary dependencies, run:
 
 ```
-python3 -m venv testenv
-source testenv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install --upgrade pip
 pip install .
 pip install '.[development]'
-deactivate && source testenv/bin/activate
+deactivate && source .venv/bin/activate
 ```
 
 ## Managing dependencies
@@ -61,7 +61,7 @@ The optional dependency sets also give the developer the option to manually list
 #### Using PostgreSQLClient in an AWS Lambda
 Because `psycopg` requires a statically linked version of the `libpq` library, the `PostgreSQLClient` cannot be installed as-is in an AWS Lambda function. Instead, it must be packaged as follows:
 ```bash
-pip install --target ./package nypl-py-utils[postgresql-client]==1.0.1
+pip install --target ./package nypl-py-utils[postgresql-client]==1.1.2
 
 pip install \
     --platform manylinux2014_x86_64 \

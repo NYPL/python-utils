@@ -1,3 +1,4 @@
+import json
 import os
 import yaml
 
@@ -11,7 +12,8 @@ def load_env_file(run_type, file_string):
     """
     This method loads a YAML config file containing environment variables,
     decrypts whichever are encrypted, and puts them all into os.environ as
-    strings.
+    strings. For a YAML variable containing a list of values, the list is
+    exported into os.environ as a json string and should be loaded as such.
 
     It requires the YAML file to be split into a 'PLAINTEXT_VARIABLES' section
     and an 'ENCRYPTED_VARIABLES' section.
@@ -43,11 +45,18 @@ def load_env_file(run_type, file_string):
 
     if env_dict:
         for key, value in env_dict.get('PLAINTEXT_VARIABLES', {}).items():
-            os.environ[key] = str(value)
+            if type(value) is list:
+                os.environ[key] = json.dumps(value)
+            else:
+                os.environ[key] = str(value)
 
         kms_client = KmsClient()
         for key, value in env_dict.get('ENCRYPTED_VARIABLES', {}).items():
-            os.environ[key] = kms_client.decrypt(value)
+            if type(value) is list:
+                decrypted_list = [kms_client.decrypt(v) for v in value]
+                os.environ[key] = json.dumps(decrypted_list)
+            else:
+                os.environ[key] = kms_client.decrypt(value)
         kms_client.close()
 
 
