@@ -37,7 +37,6 @@ class Oauth2ApiClient:
         Issue an HTTP GET on the given request_path
         """
         resp = self._do_http_method('GET', request_path, **kwargs)
-        self.logger.debug('spaghetti')
         # This try/except block is to handle one of at least two possible
         # Sierra server errors. One is an empty response, and another is a
         # response with a 200 status code but response text in HTML declaring
