@@ -10,9 +10,9 @@ class Oauth2ApiClient:
     """
     Client for interacting with an Oauth2 authenticated API such as NYPL's
     Platform API endpoints. Note with_retries is a boolean flag which
-    determines if empty get requests will be retried 3 times or until
-    they are successful. This is to address a known issue with the Sierra
-    API where empty responses are returned intermittently.
+    determines if empty get requests will be retried self.MAX_RETRIES times or 
+    until they are successful. This is to address a known issue with the Sierra
+    API where empty and misformed responses are returned intermittently.
     """
 
     def __init__(self, client_id=None, client_secret=None, base_url=None,
@@ -32,6 +32,8 @@ class Oauth2ApiClient:
 
         self.with_retries = with_retries
 
+        self.MAX_RETRIES = 3
+
     def get(self, request_path, **kwargs):
         """
         Issue an HTTP GET on the given request_path
@@ -40,7 +42,7 @@ class Oauth2ApiClient:
         if resp.json() is None and self.with_retries is True:
             retries = \
                 kwargs.get('retries', 0) + 1
-            if retries < 3:
+            if retries < self.MAX_RETRIES:
                 self.logger.warning(
                     f'Retrying get request due to empty response from\
                          Oauth2 Client using path: {request_path}. \
@@ -50,8 +52,9 @@ class Oauth2ApiClient:
                 resp = self.get(request_path, **kwargs)
             else:
                 resp = Response()
-                resp.message = 'Oauth2 Client: Request failed after 3 \
-                        empty responses received from Oauth2 Client'
+                resp.message = f'Oauth2 Client: Request failed after \
+                    {self.MAX_RETRIES} empty responses received \
+                    from Oauth2 Client'
                 resp.status_code = 500
         return resp
 
@@ -98,7 +101,7 @@ class Oauth2ApiClient:
             # Raise error after 3 successive token refreshes
             kwargs['_do_http_method_token_refreshes'] = \
                 kwargs.get('_do_http_method_token_refreshes', 0) + 1
-            if kwargs['_do_http_method_token_refreshes'] > 3:
+            if kwargs['_do_http_method_token_refreshes'] > self.MAX_RETRIES:
                 raise Oauth2ApiClientError('Exhausted token refreshes') \
                     from None
 
