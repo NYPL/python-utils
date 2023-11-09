@@ -160,7 +160,7 @@ class TestOauth2ApiClient:
         assert len(token_server_post.request_history) == 4
 
     def test_bad_response_no_retries(self, requests_mock, test_instance,
-                             token_server_post, mocker):
+                                     mocker):
         mocker.patch.object(test_instance, '_do_http_method',
                             return_value=MockEmptyResponse(empty=True))
         get_spy = mocker.spy(test_instance, 'get')
@@ -170,7 +170,7 @@ class TestOauth2ApiClient:
         assert resp.message == 'Oauth2 Client: Bad response from OauthClient'
 
     def test_http_retry_fail(self, requests_mock, test_instance_with_retries,
-                             token_server_post, mocker):
+                             mocker):
         mocker.patch.object(test_instance_with_retries, '_do_http_method',
                             return_value=MockEmptyResponse(empty=True))
         get_spy = mocker.spy(test_instance_with_retries, 'get')
@@ -181,8 +181,7 @@ class TestOauth2ApiClient:
                             empty responses received from Oauth2 Client'
 
     def test_http_retry_success(self, requests_mock,
-                                test_instance_with_retries,
-                                token_server_post, mocker):
+                                test_instance_with_retries, mocker):
         mocker.patch.object(test_instance_with_retries, '_do_http_method',
                             side_effect=[MockEmptyResponse(empty=True),
                                          MockEmptyResponse(empty=False,
