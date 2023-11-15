@@ -1,9 +1,12 @@
 # Changelog
+## v1.1.3 11/9/23
+- Finalize retry logic in Oauth2 Client
+
 ## v1.1.2
 - Update config_helper to accept list environment variables
 
 ## v1.1.0/v1.1.1
-- Add retries for empty responses in oauth2 client. This was added to address a known quirk in the Sierra API where this response is returned:
+- Add retries for empty responses in Oauth2 Client. This was added to address a known quirk in the Sierra API where this response is returned:
 ```
 > GET / HTTP/1.1
 > Host: ilsstaff.nypl.org
