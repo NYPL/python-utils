@@ -37,22 +37,37 @@ class Oauth2ApiClient:
         Issue an HTTP GET on the given request_path
         """
         resp = self._do_http_method('GET', request_path, **kwargs)
-        if resp.json() is None and self.with_retries is True:
-            retries = \
-                kwargs.get('retries', 0) + 1
-            if retries < 3:
-                self.logger.warning(
-                    f'Retrying get request due to empty response from\
-                         Oauth2 Client using path: {request_path}. \
-                         Retry #{retries}')
-                sleep(pow(2, retries - 1))
-                kwargs['retries'] = retries
-                resp = self.get(request_path, **kwargs)
-            else:
-                resp = Response()
-                resp.message = 'Oauth2 Client: Request failed after 3 \
-                        empty responses received from Oauth2 Client'
-                resp.status_code = 500
+        # This try/except block is to handle one of at least two possible
+        # Sierra server errors. One is an empty response, and another is a
+        # response with a 200 status code but response text in HTML declaring
+        # Status 500.
+        try:
+            resp.json()
+        except Exception:
+            # build default server error response
+            resp = Response()
+            resp.message = 'Oauth2 Client: Bad response from OauthClient'
+            resp.status_code = 500
+            self.logger.warning(f'Get request using path {request_path} \
+                returned response text:\n{resp.text}')
+            # if client has specified that we want to retry failed requests and
+            # we haven't hit max retries
+            if self.with_retries is True:
+                retries = kwargs.get('retries', 0) + 1
+                if retries < 3:
+                    self.logger.warning(
+                        f'Retrying get request due to empty response from\
+                            Oauth2 Client using path: {request_path}. \
+                            Retry #{retries}')
+                    sleep(pow(2, retries - 1))
+                    kwargs['retries'] = retries
+                    # try request again
+                    resp = self.get(request_path, **kwargs)
+                else:
+                    resp.message = 'Oauth2 Client: Request failed after 3 \
+                            empty responses received from Oauth2 Client'
+        # Return request. If retries returned real data, it will be here,
+        # otherwise it will be the default 500 response generated earlier.
         return resp
 
     def post(self, request_path, json, **kwargs):

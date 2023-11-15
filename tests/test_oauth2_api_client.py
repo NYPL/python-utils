@@ -3,7 +3,7 @@ import time
 import json
 import pytest
 from requests_oauthlib import OAuth2Session
-from requests import HTTPError
+from requests import HTTPError, JSONDecodeError
 
 from nypl_py_utils.classes.oauth2_api_client import (Oauth2ApiClient,
                                                      Oauth2ApiClientError)
@@ -24,10 +24,11 @@ class MockEmptyResponse:
     def __init__(self, empty, status_code=None):
         self.status_code = status_code
         self.empty = empty
+        self.text = "error text"
 
     def json(self):
         if self.empty:
-            return None
+            raise JSONDecodeError
         else:
             return 'success'
 
@@ -158,18 +159,29 @@ class TestOauth2ApiClient:
         # Expect 1 initial token fetch, plus 3 retries:
         assert len(token_server_post.request_history) == 4
 
+    def test_bad_response_no_retries(self, requests_mock, test_instance,
+                                     mocker):
+        mocker.patch.object(test_instance, '_do_http_method',
+                            return_value=MockEmptyResponse(empty=True))
+        get_spy = mocker.spy(test_instance, 'get')
+        resp = test_instance.get('spaghetti')
+        assert get_spy.call_count == 1
+        assert resp.status_code == 500
+        assert resp.message == 'Oauth2 Client: Bad response from OauthClient'
+
     def test_http_retry_fail(self, requests_mock, test_instance_with_retries,
-                             token_server_post, mocker):
+                             mocker):
         mocker.patch.object(test_instance_with_retries, '_do_http_method',
                             return_value=MockEmptyResponse(empty=True))
         get_spy = mocker.spy(test_instance_with_retries, 'get')
         resp = test_instance_with_retries.get('spaghetti')
         assert get_spy.call_count == 3
         assert resp.status_code == 500
+        assert resp.message == 'Oauth2 Client: Request failed after 3 \
+                            empty responses received from Oauth2 Client'
 
     def test_http_retry_success(self, requests_mock,
-                                test_instance_with_retries,
-                                token_server_post, mocker):
+                                test_instance_with_retries, mocker):
         mocker.patch.object(test_instance_with_retries, '_do_http_method',
                             side_effect=[MockEmptyResponse(empty=True),
                                          MockEmptyResponse(empty=False,
