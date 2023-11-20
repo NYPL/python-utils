@@ -49,7 +49,7 @@ class Oauth2ApiClient:
             resp.message = 'Oauth2 Client: Bad response from OauthClient'
             resp.status_code = 500
             self.logger.warning(f'Get request using path {request_path} \
-                returned response text:\n{resp.text}')
+returned response text:\n{resp.text}')
             # if client has specified that we want to retry failed requests and
             # we haven't hit max retries
             if self.with_retries is True:
@@ -57,8 +57,7 @@ class Oauth2ApiClient:
                 if retries < 3:
                     self.logger.warning(
                         f'Retrying get request due to empty response from\
-                            Oauth2 Client using path: {request_path}. \
-                            Retry #{retries}')
+Oauth2 Client using path: {request_path}. Retry #{retries}')
                     sleep(pow(2, retries - 1))
                     kwargs['retries'] = retries
                     # try request again
