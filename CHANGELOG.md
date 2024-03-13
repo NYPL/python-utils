@@ -1,4 +1,7 @@
 # Changelog
+## v1.1.4 3/14/24
+- Fix bug with oauth2 requests after token refresh
+
 ## v1.1.3 11/9/23
 - Finalize retry logic in Oauth2 Client
 
@@ -12,7 +15,7 @@
 > Host: ilsstaff.nypl.org
 > User-Agent: curl/7.64.1
 > Accept: */*
-> 
+>
 ```
 - Due to an accidental deployment, v1.1.0 and v1.1.1 were both released but are identical
 
