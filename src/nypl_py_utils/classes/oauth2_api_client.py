@@ -117,7 +117,7 @@ Oauth2 Client using path: {request_path}. Retry #{retries}')
                     from None
 
             self._generate_access_token()
-            return self._do_http_method(method, request_path, **kwargs).json()
+            return self._do_http_method(method, request_path, **kwargs)
 
     def _create_oauth_client(self):
         """

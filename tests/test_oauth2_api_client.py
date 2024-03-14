@@ -3,7 +3,7 @@ import time
 import json
 import pytest
 from requests_oauthlib import OAuth2Session
-from requests import HTTPError, JSONDecodeError
+from requests import HTTPError, JSONDecodeError, Response
 
 from nypl_py_utils.classes.oauth2_api_client import (Oauth2ApiClient,
                                                      Oauth2ApiClientError)
@@ -120,7 +120,10 @@ class TestOauth2ApiClient:
             .post(TOKEN_URL, text=json.dumps(second_token_response))
 
         # Perform second request:
-        test_instance._do_http_method('GET', 'foo')
+        response = test_instance._do_http_method('GET', 'foo')
+        # Ensure we still return a plain requests Response object
+        assert isinstance(response, Response)
+        assert response.json() == {"foo": "bar"}
         # Expect a call on the second token server:
         assert len(second_token_server_post.request_history) == 1
         # Expect the second GET request to carry the new Bearer token:
