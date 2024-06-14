@@ -1,4 +1,7 @@
 # Changelog
+## v1.1.5 6/6/24
+- Use executemany instead of execute when appropriate in RedshiftClient.execute_transaction
+
 ## v1.1.4 3/14/24
 - Fix bug with oauth2 requests after token refresh
 
