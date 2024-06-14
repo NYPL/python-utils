@@ -76,6 +76,28 @@ class TestRedshiftClient:
             mocker.call('query 1', None),
             mocker.call('query 2 %s %s', ('a', 1)),
             mocker.call('END TRANSACTION;')])
+        mock_cursor.executemany.assert_not_called()
+        test_instance.conn.commit.assert_called_once()
+        mock_cursor.close.assert_called_once()
+
+    def test_execute_transaction_with_many(self, mock_redshift_conn,
+                                           test_instance, mocker):
+        test_instance.connect()
+
+        mock_cursor = mocker.MagicMock()
+        test_instance.conn.cursor.return_value = mock_cursor
+
+        test_instance.execute_transaction([
+            ('query 1', None), ('query 2 %s %s', (None, 1)),
+            ('query 3 %s %s', [(None, 10), ('b', 20)]), ('query 4', None)])
+        mock_cursor.execute.assert_has_calls([
+            mocker.call('BEGIN TRANSACTION;'),
+            mocker.call('query 1', None),
+            mocker.call('query 2 %s %s', (None, 1)),
+            mocker.call('query 4', None),
+            mocker.call('END TRANSACTION;')])
+        mock_cursor.executemany.assert_called_once_with(
+            'query 3 %s %s', [(None, 10), ('b', 20)])
         test_instance.conn.commit.assert_called_once()
         mock_cursor.close.assert_called_once()
 
