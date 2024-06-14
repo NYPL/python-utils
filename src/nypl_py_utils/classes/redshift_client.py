@@ -35,12 +35,12 @@ class RedshiftClient:
 
     def execute_query(self, query, dataframe=False):
         """
-        Executes an arbitrary query against the given database connection.
+        Executes an arbitrary read query against the given database connection.
 
         Parameters
         ----------
         query: str
-            The query to execute
+            The query to execute, assumed to be a read query
         dataframe: bool, optional
             Whether the data will be returned as a pandas DataFrame. Defaults
             to False, which means the data is returned as a list of tuples.
@@ -48,9 +48,8 @@ class RedshiftClient:
         Returns
         -------
         None or sequence
-            None if is_write_query is True. A list of tuples or a pandas
-            DataFrame (based on the dataframe input) if is_write_query is
-            False.
+            A list of tuples or a pandas DataFrame (based on the `dataframe`
+            input)
         """
         self.logger.info('Querying {} database'.format(self.database))
         self.logger.debug('Executing query {}'.format(query))
@@ -82,7 +81,12 @@ class RedshiftClient:
         ----------
         queries: list<tuple>
             A list of tuples containing a query and the values to be used if
-            the query is parameterized (or None if it's not)
+            the query is parameterized (or None if it's not). The values can
+            be for a single insert query -- e.g. execute_transaction(
+                "INSERT INTO x VALUES (%s, %s)", (1, "a"))
+            or for multiple -- e.g execute_transaction(
+                "INSERT INTO x VALUES (%s, %s)", [(1, "a"), (2, "b")])
+
         """
         self.logger.info('Executing transaction against {} database'.format(
             self.database))
@@ -91,7 +95,13 @@ class RedshiftClient:
             cursor.execute('BEGIN TRANSACTION;')
             for query in queries:
                 self.logger.debug('Executing query {}'.format(query))
-                cursor.execute(query[0], query[1])
+                if query[1] is not None and all(
+                    isinstance(el, tuple) or isinstance(el, list)
+                    for el in query[1]
+                ):
+                    cursor.executemany(query[0], query[1])
+                else:
+                    cursor.execute(query[0], query[1])
             cursor.execute('END TRANSACTION;')
             self.conn.commit()
         except Exception as e:
