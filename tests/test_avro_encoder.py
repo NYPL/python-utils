@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from nypl_py_utils.classes.avro_encoder import AvroEncoder, AvroEncoderError
+from nypl_py_utils.classes.avro_encoder import AvroEncoder, AvroInterpreterError
 from requests.exceptions import ConnectTimeout
 
 _TEST_SCHEMA = {'data': {'schema': json.dumps({
@@ -33,19 +33,19 @@ class TestAvroEncoder:
 
     def test_request_error(self, requests_mock):
         requests_mock.get('https://test_schema_url', exc=ConnectTimeout)
-        with pytest.raises(AvroEncoderError):
+        with pytest.raises(AvroInterpreterError):
             AvroEncoder('https://test_schema_url')
 
     def test_bad_json_error(self, requests_mock):
         requests_mock.get(
             'https://test_schema_url', text='bad json')
-        with pytest.raises(AvroEncoderError):
+        with pytest.raises(AvroInterpreterError):
             AvroEncoder('https://test_schema_url')
 
     def test_missing_key_error(self, requests_mock):
         requests_mock.get(
             'https://test_schema_url', text=json.dumps({'field': 'value'}))
-        with pytest.raises(AvroEncoderError):
+        with pytest.raises(AvroInterpreterError):
             AvroEncoder('https://test_schema_url')
 
     def test_encode_record(self, test_instance):
@@ -56,7 +56,7 @@ class TestAvroEncoder:
 
     def test_encode_record_error(self, test_instance):
         TEST_RECORD = {'patron_id': 123, 'bad_field': 'bad'}
-        with pytest.raises(AvroEncoderError):
+        with pytest.raises(AvroInterpreterError):
             test_instance.encode_record(TEST_RECORD)
 
     def test_encode_batch(self, test_instance):
@@ -75,7 +75,7 @@ class TestAvroEncoder:
         BAD_BATCH = [
             {'patron_id': 123, 'library_branch': 'aa'},
             {'patron_id': 456, 'bad_field': 'bad'}]
-        with pytest.raises(AvroEncoderError):
+        with pytest.raises(AvroInterpreterError):
             test_instance.encode_batch(BAD_BATCH)
 
     def test_decode_record(self, test_instance):
@@ -86,5 +86,5 @@ class TestAvroEncoder:
 
     def test_decode_record_error(self, test_instance):
         TEST_ENCODED_RECORD = b'bad-encoding'
-        with pytest.raises(AvroEncoderError):
+        with pytest.raises(AvroInterpreterError):
             test_instance.decode_record(TEST_ENCODED_RECORD)
