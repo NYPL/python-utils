@@ -75,3 +75,11 @@ development = [
     "pytest-mock>=3.10.0",
     "requests-mock>=1.10.0"
 ]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q"
+pythonpath = "src"
+testpaths = [
+    "tests"
+]
