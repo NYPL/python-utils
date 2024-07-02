@@ -8,9 +8,8 @@ from psycopg_pool import ConnectionPool
 class PostgreSQLPoolClient:
     """Client for managing a connection pool to a PostgreSQL database"""
 
-    def __init__(
-        self, host, port, db_name, user, password, conn_timeout=300.0, **kwargs
-    ):
+    def __init__(self, host, port, db_name, user, password, conn_timeout=300.0,
+                 **kwargs):
         """
         Creates (but does not open) a connection pool.
 
@@ -33,30 +32,25 @@ class PostgreSQLPoolClient:
                     min_size connections, which will stay open until manually
                     closed.
         """
-        self.logger = create_log("postgresql_client")
-        self.conn_info = (
-            "postgresql://{user}:{password}@{host}:{port}/" "{db_name}"
-        ).format(user=user, password=password, host=host, port=port, db_name=db_name)
+        self.logger = create_log('postgresql_client')
+        self.conn_info = ('postgresql://{user}:{password}@{host}:{port}/'
+                          '{db_name}').format(user=user, password=password,
+                                              host=host, port=port,
+                                              db_name=db_name)
 
         self.db_name = db_name
         self.kwargs = kwargs
-        self.kwargs["min_size"] = kwargs.get("min_size", 0)
-        self.kwargs["max_size"] = kwargs.get("max_size", 1)
-        self.kwargs["max_idle"] = kwargs.get("max_idle", 90.0)
+        self.kwargs['min_size'] = kwargs.get('min_size', 0)
+        self.kwargs['max_size'] = kwargs.get('max_size', 1)
+        self.kwargs['max_idle'] = kwargs.get('max_idle', 90.0)
 
-        if self.kwargs["max_idle"] > 150.0:
-            self.logger.error(
-                (
-                    "max_idle is too high -- values over 150 seconds are unsafe "
-                    "and may lead to connection leakages in ECS"
-                )
-            )
-            raise PostgreSQLPoolClientError(
-                (
-                    "max_idle is too high -- values over 150 seconds are unsafe "
-                    "and may lead to connection leakages in ECS"
-                )
-            ) from None
+        if self.kwargs['max_idle'] > 150.0:
+            self.logger.error((
+                'max_idle is too high -- values over 150 seconds are unsafe '
+                'and may lead to connection leakages in ECS'))
+            raise PostgreSQLPoolClientError((
+                'max_idle is too high -- values over 150 seconds are unsafe '
+                'and may lead to connection leakages in ECS')) from None
 
         self.pool = ConnectionPool(self.conn_info, open=False, **self.kwargs)
 
@@ -71,24 +65,22 @@ class PostgreSQLPoolClient:
             The number of seconds to try connecting before throwing an error.
             Defaults to 300 seconds.
         """
-        self.logger.info("Connecting to {} database".format(self.db_name))
+        self.logger.info('Connecting to {} database'.format(self.db_name))
         try:
             if self.pool is None:
-                self.pool = ConnectionPool(self.conn_info, open=False, **self.kwargs)
+                self.pool = ConnectionPool(
+                    self.conn_info, open=False, **self.kwargs)
             self.pool.open(wait=True, timeout=timeout)
         except psycopg.Error as e:
             self.logger.error(
-                "Error connecting to {name} database: {error}".format(
-                    name=self.db_name, error=e
-                )
-            )
+                'Error connecting to {name} database: {error}'.format(
+                    name=self.db_name, error=e))
             raise PostgreSQLPoolClientError(
-                "Error connecting to {name} database: {error}".format(
-                    name=self.db_name, error=e
-                )
-            ) from None
+                'Error connecting to {name} database: {error}'.format(
+                    name=self.db_name, error=e)) from None
 
-    def execute_query(self, query, query_params=None, row_factory=tuple_row, **kwargs):
+    def execute_query(self, query, query_params=None, row_factory=tuple_row,
+                      **kwargs):
         """
         Requests a connection from the pool and uses it to execute an arbitrary
         query. After the query is complete, either commits it or rolls it back,
@@ -114,28 +106,28 @@ class PostgreSQLPoolClient:
             based on the row_factory input if there's something to return
             (even if the result set is empty).
         """
-        self.logger.info("Querying {} database".format(self.db_name))
-        self.logger.debug("Executing query {}".format(query))
+        self.logger.info('Querying {} database'.format(self.db_name))
+        self.logger.debug('Executing query {}'.format(query))
         with self.pool.connection() as conn:
             try:
                 conn.row_factory = row_factory
                 cursor = conn.execute(query, query_params, **kwargs)
-                return None if cursor.description is None else cursor.fetchall()
+                return (None if cursor.description is None
+                        else cursor.fetchall())
             except Exception as e:
                 self.logger.error(
-                    (
-                        "Error executing {name} database query '{query}': " "{error}"
-                    ).format(name=self.db_name, query=query, error=e)
-                )
+                    ('Error executing {name} database query \'{query}\': '
+                     '{error}').format(
+                        name=self.db_name, query=query, error=e))
                 raise PostgreSQLPoolClientError(
-                    (
-                        "Error executing {name} database query '{query}': " "{error}"
-                    ).format(name=self.db_name, query=query, error=e)
-                ) from None
+                    ('Error executing {name} database query \'{query}\': '
+                     '{error}').format(
+                        name=self.db_name, query=query, error=e)) from None
 
     def close_pool(self):
         """Closes the connection pool"""
-        self.logger.debug("Closing {} database connection pool".format(self.db_name))
+        self.logger.debug('Closing {} database connection pool'.format(
+            self.db_name))
         self.pool.close()
         self.pool = None
 

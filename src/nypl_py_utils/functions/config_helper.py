@@ -5,7 +5,7 @@ import yaml
 from nypl_py_utils.classes.kms_client import KmsClient
 from nypl_py_utils.functions.log_helper import create_log
 
-logger = create_log("config_helper")
+logger = create_log('config_helper')
 
 
 def load_env_file(run_type, file_string):
@@ -30,31 +30,29 @@ def load_env_file(run_type, file_string):
 
     env_dict = None
     open_file = file_string.format(run_type)
-    logger.info("Loading env file {}".format(open_file))
+    logger.info('Loading env file {}'.format(open_file))
     try:
-        with open(open_file, "r") as env_stream:
+        with open(open_file, 'r') as env_stream:
             try:
                 env_dict = yaml.safe_load(env_stream)
             except yaml.YAMLError:
-                logger.error("Invalid YAML file: {}".format(open_file))
+                logger.error('Invalid YAML file: {}'.format(open_file))
                 raise ConfigHelperError(
-                    "Invalid YAML file: {}".format(open_file)
-                ) from None
+                    'Invalid YAML file: {}'.format(open_file)) from None
     except FileNotFoundError:
-        logger.error("Could not find config file {}".format(open_file))
+        logger.error('Could not find config file {}'.format(open_file))
         raise ConfigHelperError(
-            "Could not find config file {}".format(open_file)
-        ) from None
+            'Could not find config file {}'.format(open_file)) from None
 
     if env_dict:
-        for key, value in env_dict.get("PLAINTEXT_VARIABLES", {}).items():
+        for key, value in env_dict.get('PLAINTEXT_VARIABLES', {}).items():
             if type(value) is list:
                 os.environ[key] = json.dumps(value)
             else:
                 os.environ[key] = str(value)
 
         kms_client = KmsClient()
-        for key, value in env_dict.get("ENCRYPTED_VARIABLES", {}).items():
+        for key, value in env_dict.get('ENCRYPTED_VARIABLES', {}).items():
             if type(value) is list:
                 decrypted_list = [kms_client.decrypt(v) for v in value]
                 os.environ[key] = json.dumps(decrypted_list)

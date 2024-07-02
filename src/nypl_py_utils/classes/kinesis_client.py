@@ -17,19 +17,20 @@ class KinesisClient:
     """
 
     def __init__(self, stream_arn, batch_size, max_retries=5):
-        self.logger = create_log("kinesis_client")
+        self.logger = create_log('kinesis_client')
         self.stream_arn = stream_arn
         self.batch_size = batch_size
         self.max_retries = max_retries
 
         try:
             self.kinesis_client = boto3.client(
-                "kinesis", region_name=os.environ.get("AWS_REGION", "us-east-1")
-            )
+                'kinesis', region_name=os.environ.get('AWS_REGION',
+                                                      'us-east-1'))
         except ClientError as e:
-            self.logger.error("Could not create Kinesis client: {err}".format(err=e))
+            self.logger.error(
+                'Could not create Kinesis client: {err}'.format(err=e))
             raise KinesisClientError(
-                "Could not create Kinesis client: {err}".format(err=e)
+                'Could not create Kinesis client: {err}'.format(err=e)
             ) from None
 
     def close(self):
@@ -44,11 +45,10 @@ class KinesisClient:
         """
         records_sent_since_pause = 0
         for i in range(0, len(records), self.batch_size):
-            encoded_batch = records[i : i + self.batch_size]
-            kinesis_records = [
-                {"Data": record, "PartitionKey": str(int(time.time() * 1000000000))}
-                for record in encoded_batch
-            ]
+            encoded_batch = records[i:i + self.batch_size]
+            kinesis_records = [{'Data': record, 'PartitionKey':
+                                str(int(time.time() * 1000000000))}
+                               for record in encoded_batch]
 
             if records_sent_since_pause + len(encoded_batch) > 1000:
                 records_sent_since_pause = 0
@@ -63,41 +63,32 @@ class KinesisClient:
         """
         if call_count > self.max_retries:
             self.logger.error(
-                "Failed to send records to Kinesis {} times in a row".format(
-                    call_count - 1
-                )
-            )
+                'Failed to send records to Kinesis {} times in a row'.format(
+                    call_count-1))
             raise KinesisClientError(
-                "Failed to send records to Kinesis {} times in a row".format(
-                    call_count - 1
-                )
-            ) from None
+                'Failed to send records to Kinesis {} times in a row'.format(
+                    call_count-1)) from None
 
         try:
             self.logger.info(
-                "Sending ({count}) records to {arn} Kinesis stream".format(
-                    count=len(kinesis_records), arn=self.stream_arn
-                )
-            )
+                'Sending ({count}) records to {arn} Kinesis stream'.format(
+                    count=len(kinesis_records), arn=self.stream_arn))
             response = self.kinesis_client.put_records(
-                Records=kinesis_records, StreamARN=self.stream_arn
-            )
-            if response["FailedRecordCount"] > 0:
+                Records=kinesis_records, StreamARN=self.stream_arn)
+            if response['FailedRecordCount'] > 0:
                 self.logger.warning(
-                    "Failed to send {} records to Kinesis".format(
-                        response["FailedRecordCount"]
-                    )
-                )
+                    'Failed to send {} records to Kinesis'.format(
+                        response['FailedRecordCount']))
                 failed_records = []
-                for i in range(len(response["Records"])):
-                    if "ErrorCode" in response["Records"][i]:
+                for i in range(len(response['Records'])):
+                    if 'ErrorCode' in response['Records'][i]:
                         failed_records.append(kinesis_records[i])
-                self._send_kinesis_format_records(failed_records, call_count + 1)
+                self._send_kinesis_format_records(failed_records, call_count+1)
         except ClientError as e:
-            self.logger.error("Error sending records to Kinesis: {}".format(e))
+            self.logger.error(
+                'Error sending records to Kinesis: {}'.format(e))
             raise KinesisClientError(
-                "Error sending records to Kinesis: {}".format(e)
-            ) from None
+                'Error sending records to Kinesis: {}'.format(e)) from None
 
 
 class KinesisClientError(Exception):

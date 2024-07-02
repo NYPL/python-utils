@@ -1,6 +1,6 @@
 # Changelog
 ## v1.1.6 6/26/24
-- Generalized Avro functions and separated encoding/decoding behavior
+- Generalized Avro functions and separated encoding/decoding behavior.
 
 ## v1.1.5 6/6/24
 - Use executemany instead of execute when appropriate in RedshiftClient.execute_transaction
