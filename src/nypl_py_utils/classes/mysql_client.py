@@ -7,7 +7,7 @@ class MySQLClient:
     """Client for managing connections to a MySQL database"""
 
     def __init__(self, host, port, database, user, password):
-        self.logger = create_log('mysql_client')
+        self.logger = create_log("mysql_client")
         self.conn = None
         self.host = host
         self.port = port
@@ -28,7 +28,7 @@ class MySQLClient:
                 Whether to automatically commit each query rather than running
                 them as part of a transaction. By default False.
         """
-        self.logger.info('Connecting to {} database'.format(self.database))
+        self.logger.info("Connecting to {} database".format(self.database))
         try:
             self.conn = mysql.connector.connect(
                 host=self.host,
@@ -36,14 +36,19 @@ class MySQLClient:
                 database=self.database,
                 user=self.user,
                 password=self.password,
-                **kwargs)
+                **kwargs,
+            )
         except mysql.connector.Error as e:
             self.logger.error(
-                'Error connecting to {name} database: {error}'.format(
-                    name=self.database, error=e))
+                "Error connecting to {name} database: {error}".format(
+                    name=self.database, error=e
+                )
+            )
             raise MySQLClientError(
-                'Error connecting to {name} database: {error}'.format(
-                    name=self.database, error=e)) from None
+                "Error connecting to {name} database: {error}".format(
+                    name=self.database, error=e
+                )
+            ) from None
 
     def execute_query(self, query, query_params=None, **kwargs):
         """
@@ -71,8 +76,8 @@ class MySQLClient:
             or dictionaries (based on the dictionary input) if there's
             something to return (even if the result set is empty).
         """
-        self.logger.info('Querying {} database'.format(self.database))
-        self.logger.debug('Executing query {}'.format(query))
+        self.logger.info("Querying {} database".format(self.database))
+        self.logger.debug("Executing query {}".format(query))
         try:
             cursor = self.conn.cursor(**kwargs)
             cursor.execute(query, query_params)
@@ -84,18 +89,21 @@ class MySQLClient:
         except Exception as e:
             self.conn.rollback()
             self.logger.error(
-                ('Error executing {name} database query \'{query}\': {error}')
-                .format(name=self.database, query=query, error=e))
+                ("Error executing {name} database query '{query}': {error}").format(
+                    name=self.database, query=query, error=e
+                )
+            )
             raise MySQLClientError(
-                ('Error executing {name} database query \'{query}\': {error}')
-                .format(name=self.database, query=query, error=e)) from None
+                ("Error executing {name} database query '{query}': {error}").format(
+                    name=self.database, query=query, error=e
+                )
+            ) from None
         finally:
             cursor.close()
 
     def close_connection(self):
         """Closes the database connection"""
-        self.logger.debug('Closing {} database connection'.format(
-            self.database))
+        self.logger.debug("Closing {} database connection".format(self.database))
         self.conn.close()
 
 

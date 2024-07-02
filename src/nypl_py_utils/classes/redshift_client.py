@@ -8,7 +8,7 @@ class RedshiftClient:
     """Client for managing connections to Redshift"""
 
     def __init__(self, host, database, user, password):
-        self.logger = create_log('redshift_client')
+        self.logger = create_log("redshift_client")
         self.conn = None
         self.host = host
         self.database = database
@@ -17,21 +17,26 @@ class RedshiftClient:
 
     def connect(self):
         """Connects to a Redshift database using the given credentials"""
-        self.logger.info('Connecting to {} database'.format(self.database))
+        self.logger.info("Connecting to {} database".format(self.database))
         try:
             self.conn = redshift_connector.connect(
                 host=self.host,
                 database=self.database,
                 user=self.user,
                 password=self.password,
-                sslmode='verify-full')
+                sslmode="verify-full",
+            )
         except ClientError as e:
             self.logger.error(
-                'Error connecting to {name} database: {error}'.format(
-                    name=self.database, error=e))
+                "Error connecting to {name} database: {error}".format(
+                    name=self.database, error=e
+                )
+            )
             raise RedshiftClientError(
-                'Error connecting to {name} database: {error}'.format(
-                    name=self.database, error=e)) from None
+                "Error connecting to {name} database: {error}".format(
+                    name=self.database, error=e
+                )
+            ) from None
 
     def execute_query(self, query, dataframe=False):
         """
@@ -51,8 +56,8 @@ class RedshiftClient:
             A list of tuples or a pandas DataFrame (based on the `dataframe`
             input)
         """
-        self.logger.info('Querying {} database'.format(self.database))
-        self.logger.debug('Executing query {}'.format(query))
+        self.logger.info("Querying {} database".format(self.database))
+        self.logger.debug("Executing query {}".format(query))
         try:
             cursor = self.conn.cursor()
             cursor.execute(query)
@@ -63,11 +68,15 @@ class RedshiftClient:
         except Exception as e:
             self.conn.rollback()
             self.logger.error(
-                ('Error executing {name} database query \'{query}\': {error}')
-                .format(name=self.database, query=query, error=e))
+                ("Error executing {name} database query '{query}': {error}").format(
+                    name=self.database, query=query, error=e
+                )
+            )
             raise RedshiftClientError(
-                ('Error executing {name} database query \'{query}\': {error}')
-                .format(name=self.database, query=query, error=e)) from None
+                ("Error executing {name} database query '{query}': {error}").format(
+                    name=self.database, query=query, error=e
+                )
+            ) from None
         finally:
             cursor.close()
 
@@ -88,37 +97,40 @@ class RedshiftClient:
                 "INSERT INTO x VALUES (%s, %s)", [(1, "a"), (2, "b")])
 
         """
-        self.logger.info('Executing transaction against {} database'.format(
-            self.database))
+        self.logger.info(
+            "Executing transaction against {} database".format(self.database)
+        )
         try:
             cursor = self.conn.cursor()
-            cursor.execute('BEGIN TRANSACTION;')
+            cursor.execute("BEGIN TRANSACTION;")
             for query in queries:
-                self.logger.debug('Executing query {}'.format(query))
+                self.logger.debug("Executing query {}".format(query))
                 if query[1] is not None and all(
-                    isinstance(el, tuple) or isinstance(el, list)
-                    for el in query[1]
+                    isinstance(el, tuple) or isinstance(el, list) for el in query[1]
                 ):
                     cursor.executemany(query[0], query[1])
                 else:
                     cursor.execute(query[0], query[1])
-            cursor.execute('END TRANSACTION;')
+            cursor.execute("END TRANSACTION;")
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
             self.logger.error(
-                ('Error executing {name} database transaction: {error}')
-                .format(name=self.database, error=e))
+                ("Error executing {name} database transaction: {error}").format(
+                    name=self.database, error=e
+                )
+            )
             raise RedshiftClientError(
-                ('Error executing {name} database transaction: {error}')
-                .format(name=self.database, error=e)) from None
+                ("Error executing {name} database transaction: {error}").format(
+                    name=self.database, error=e
+                )
+            ) from None
         finally:
             cursor.close()
 
     def close_connection(self):
         """Closes the database connection"""
-        self.logger.debug('Closing {} database connection'.format(
-            self.database))
+        self.logger.debug("Closing {} database connection".format(self.database))
         self.conn.close()
 
 

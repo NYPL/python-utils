@@ -11,16 +11,17 @@ class KmsClient:
     """Client for interacting with a KMS client"""
 
     def __init__(self):
-        self.logger = create_log('kms_client')
+        self.logger = create_log("kms_client")
 
         try:
             self.kms_client = boto3.client(
-                'kms', region_name=os.environ.get('AWS_REGION', 'us-east-1'))
+                "kms", region_name=os.environ.get("AWS_REGION", "us-east-1")
+            )
         except ClientError as e:
-            self.logger.error(
-                'Could not create KMS client: {err}'.format(err=e))
+            self.logger.error("Could not create KMS client: {err}".format(err=e))
             raise KmsClientError(
-                'Could not create KMS client: {err}'.format(err=e)) from None
+                "Could not create KMS client: {err}".format(err=e)
+            ) from None
 
     def close(self):
         self.kms_client.close()
@@ -30,16 +31,19 @@ class KmsClient:
         This method takes a base 64 KMS-encoded string and uses the KMS client
         to decrypt it into a usable string.
         """
-        self.logger.debug('Decrypting \'{}\''.format(encrypted_text))
+        self.logger.debug("Decrypting '{}'".format(encrypted_text))
         try:
             decoded_text = b64decode(encrypted_text)
             return self.kms_client.decrypt(CiphertextBlob=decoded_text)[
-                'Plaintext'].decode('utf-8')
+                "Plaintext"
+            ].decode("utf-8")
         except (ClientError, base64Error, TypeError) as e:
-            self.logger.error('Could not decrypt \'{val}\': {err}'.format(
-                val=encrypted_text, err=e))
-            raise KmsClientError('Could not decrypt \'{val}\': {err}'.format(
-                val=encrypted_text, err=e)) from None
+            self.logger.error(
+                "Could not decrypt '{val}': {err}".format(val=encrypted_text, err=e)
+            )
+            raise KmsClientError(
+                "Could not decrypt '{val}': {err}".format(val=encrypted_text, err=e)
+            ) from None
 
 
 class KmsClientError(Exception):
