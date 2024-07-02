@@ -1,7 +1,8 @@
 import json
 import pytest
 
-from nypl_py_utils.classes.avro_client import AvroDecoder, AvroEncoder, AvroClientError
+from nypl_py_utils.classes.avro_client import (
+    AvroDecoder, AvroEncoder, AvroClientError)
 from requests.exceptions import ConnectTimeout
 
 _TEST_SCHEMA = {'data': {'schema': json.dumps({
@@ -19,6 +20,7 @@ _TEST_SCHEMA = {'data': {'schema': json.dumps({
     ]
 })}}
 
+
 class TestAvroClient:
 
     @pytest.fixture
@@ -33,9 +35,12 @@ class TestAvroClient:
             'https://test_schema_url', text=json.dumps(_TEST_SCHEMA))
         return AvroDecoder('https://test_schema_url')
 
-    def test_get_json_schema(self, test_avro_encoder_instance, test_avro_decoder_instance):
-        assert test_avro_encoder_instance.schema == _TEST_SCHEMA['data']['schema']
-        assert test_avro_decoder_instance.schema == _TEST_SCHEMA['data']['schema']
+    def test_get_json_schema(self, test_avro_encoder_instance,
+                             test_avro_decoder_instance):
+        assert test_avro_encoder_instance.schema == _TEST_SCHEMA['data'][
+            'schema']
+        assert test_avro_decoder_instance.schema == _TEST_SCHEMA['data'][
+            'schema']
 
     def test_request_error(self, requests_mock):
         requests_mock.get('https://test_schema_url', exc=ConnectTimeout)
@@ -54,18 +59,21 @@ class TestAvroClient:
         with pytest.raises(AvroClientError):
             AvroEncoder('https://test_schema_url')
 
-    def test_encode_record(self, test_avro_encoder_instance, test_avro_decoder_instance):
+    def test_encode_record(self, test_avro_encoder_instance,
+                           test_avro_decoder_instance):
         TEST_RECORD = {'patron_id': 123, 'library_branch': 'aa'}
         encoded_record = test_avro_encoder_instance.encode_record(TEST_RECORD)
         assert type(encoded_record) is bytes
-        assert test_avro_decoder_instance.decode_record(encoded_record) == TEST_RECORD
+        assert test_avro_decoder_instance.decode_record(
+            encoded_record) == TEST_RECORD
 
     def test_encode_record_error(self, test_avro_encoder_instance):
         TEST_RECORD = {'patron_id': 123, 'bad_field': 'bad'}
         with pytest.raises(AvroClientError):
             test_avro_encoder_instance.encode_record(TEST_RECORD)
 
-    def test_encode_batch(self, test_avro_encoder_instance, test_avro_decoder_instance):
+    def test_encode_batch(self, test_avro_encoder_instance,
+                          test_avro_decoder_instance):
         TEST_BATCH = [
             {'patron_id': 123, 'library_branch': 'aa'},
             {'patron_id': 456, 'library_branch': None},
@@ -89,10 +97,11 @@ class TestAvroClient:
         TEST_ENCODED_RECORD = b'\xf6\x01\x02\x04aa'
         assert test_avro_decoder_instance.decode_record(
             TEST_ENCODED_RECORD) == TEST_DECODED_RECORD
-    
+
     def test_decode_record_b64(self, test_avro_decoder_instance):
         TEST_DECODED_RECORD = {"patron_id'": 123, "library_branch": "aa"}
-        TEST_ENCODED_RECORD = "eyJwYXRyb25faWQnIjogMTIzLCAibGlicmFyeV9icmFuY2giOiAiYWEifQ=="
+        TEST_ENCODED_RECORD = (
+            "eyJwYXRyb25faWQnIjogMTIzLCAibGlicmFyeV9icmFuY2giOiAiYWEifQ==")
         assert test_avro_decoder_instance.decode_record(
             TEST_ENCODED_RECORD, "base64") == TEST_DECODED_RECORD
 
