@@ -3,7 +3,7 @@ import base64
 import json
 import requests
 
-from avro.schema import AvroException
+from avro.errors import AvroException
 from avro.io import BinaryDecoder, BinaryEncoder, DatumReader, DatumWriter
 from io import BytesIO
 from nypl_py_utils.functions.log_helper import create_log
