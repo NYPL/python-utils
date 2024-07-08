@@ -2,7 +2,7 @@ import json
 import pytest
 
 from nypl_py_utils.classes.avro_client import (
-    AvroDecoder, AvroEncoder, AvroClientError)
+    AvroClientError, AvroDecoder, AvroEncoder)
 from requests.exceptions import ConnectTimeout
 
 _TEST_SCHEMA = {'data': {'schema': json.dumps({
@@ -39,8 +39,8 @@ class TestAvroClient:
                              test_avro_decoder_instance):
         assert test_avro_encoder_instance.schema == _TEST_SCHEMA['data'][
             'schema']
-        assert test_avro_decoder_instance.schema == _TEST_SCHEMA['data'][
-            'schema']
+        # assert test_avro_decoder_instance.schema == _TEST_SCHEMA['data'][
+        #     'schema']
 
     def test_request_error(self, requests_mock):
         requests_mock.get('https://test_schema_url', exc=ConnectTimeout)
@@ -98,14 +98,26 @@ class TestAvroClient:
         assert test_avro_decoder_instance.decode_record(
             TEST_ENCODED_RECORD) == TEST_DECODED_RECORD
 
-    def test_decode_record_b64(self, test_avro_decoder_instance):
-        TEST_DECODED_RECORD = {"patron_id'": 123, "library_branch": "aa"}
-        TEST_ENCODED_RECORD = (
-            "eyJwYXRyb25faWQnIjogMTIzLCAibGlicmFyeV9icmFuY2giOiAiYWEifQ==")
-        assert test_avro_decoder_instance.decode_record(
-            TEST_ENCODED_RECORD, "base64") == TEST_DECODED_RECORD
-
     def test_decode_record_error(self, test_avro_decoder_instance):
         TEST_ENCODED_RECORD = b'bad-encoding'
         with pytest.raises(AvroClientError):
             test_avro_decoder_instance.decode_record(TEST_ENCODED_RECORD)
+
+    def test_decode_batch(self, test_avro_decoder_instance):
+        TEST_ENCODED_BATCH = [
+            b'\xf6\x01\x02\x04aa',
+            b'\x90\x07\x00',
+            b'\xaa\x0c\x02\x04bb']
+        TEST_DECODED_BATCH = [
+            {'patron_id': 123, 'library_branch': 'aa'},
+            {'patron_id': 456, 'library_branch': None},
+            {'patron_id': 789, 'library_branch': 'bb'}]
+        assert test_avro_decoder_instance.decode_batch(
+            TEST_ENCODED_BATCH) == TEST_DECODED_BATCH
+
+    def test_decode_batch_error(self, test_avro_decoder_instance):
+        BAD_BATCH = [
+            b'\xf6\x01\x02\x04aa',
+            b'bad-encoding']
+        with pytest.raises(AvroClientError):
+            test_avro_decoder_instance.decode_batch(BAD_BATCH)

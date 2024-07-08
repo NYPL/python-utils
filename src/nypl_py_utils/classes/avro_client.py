@@ -1,6 +1,5 @@
 import avro.schema
 import base64
-import json
 import requests
 
 from avro.errors import AvroException
@@ -109,39 +108,18 @@ class AvroDecoder(AvroClient):
     Platform API endpoint from which to fetch the schema in JSON format.
     """
 
-    def decode_record(self, record, encoding="binary"):
+    def decode_record(self, record):
         """
         Decodes a single record represented either as a byte or
         base64 string, using the given Avro schema.
 
         Returns a dictionary where each key is a field in the schema.
         """
-        self.logger.info('Decoding {rec} of type {type} using {schema} schema'
-                         .format(rec=record, type=encoding,
-                                 schema=self.schema.name))
-
-        if encoding == "base64":
-            return self._decode_base64(record)
-        elif encoding == "binary":
-            return self._decode_binary(record)
-        else:
-            self.logger.error(
-                'Failed to decode record due to encoding type: {}'
-                .format(encoding))
-            raise AvroClientError(
-                'Invalid encoding type: {}'.format(encoding))
-
-    def _decode_base64(self, record):
-        decoded_data = base64.b64decode(record).decode("utf-8")
-        try:
-            return json.loads(decoded_data)
-        except Exception as e:
-            if isinstance(decoded_data, bytes):
-                self._decode_binary(decoded_data)
-            else:
-                self.logger.error('Failed to decode record: {}'.format(e))
-                raise AvroClientError(
-                    'Failed to decode record: {}'.format(e)) from None
+        self.logger.info('Decoding {rec} using {schema} schema'
+                         .format(rec=record, schema=self.schema.name))
+        bytes_input = base64.b64decode(record) if (
+            isinstance(record, str)) else record
+        return self._decode_binary(bytes_input)
 
     def _decode_binary(self, record):
         datum_reader = DatumReader(self.schema)
@@ -153,6 +131,21 @@ class AvroDecoder(AvroClient):
                 self.logger.error('Failed to decode record: {}'.format(e))
                 raise AvroClientError(
                     'Failed to decode record: {}'.format(e)) from None
+
+    def decode_batch(self, record_list):
+        """
+        Decodes a list of JSON records using the given Avro schema.
+
+        Returns a list of strings where each string is an decoded record.
+        """
+        self.logger.info(
+            'Encoding ({num_rec}) records using {schema} schema'.format(
+                num_rec=len(record_list), schema=self.schema.name))
+        decoded_records = []
+        for record in record_list:
+            decoded_record = self._decode_binary(record)
+            decoded_records.append(decoded_record)
+        return decoded_records
 
 
 class AvroClientError(Exception):
