@@ -32,9 +32,7 @@ class TestAvroClient:
     @pytest.fixture
     def test_avro_decoder_instance(self, requests_mock):
         requests_mock.get(
-            'https://test_schema_url', text=json.dumps(LOCATION_NEW))
-        # requests_mock.get(
-        #     'https://test_schema_url', text=json.dumps(_TEST_SCHEMA))
+            'https://test_schema_url', text=json.dumps(_TEST_SCHEMA))
         return AvroDecoder('https://test_schema_url')
 
     def test_get_json_schema(self, test_avro_encoder_instance,
