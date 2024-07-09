@@ -32,7 +32,9 @@ class TestAvroClient:
     @pytest.fixture
     def test_avro_decoder_instance(self, requests_mock):
         requests_mock.get(
-            'https://test_schema_url', text=json.dumps(_TEST_SCHEMA))
+            'https://test_schema_url', text=json.dumps(LOCATION_NEW))
+        # requests_mock.get(
+        #     'https://test_schema_url', text=json.dumps(_TEST_SCHEMA))
         return AvroDecoder('https://test_schema_url')
 
     def test_get_json_schema(self, test_avro_encoder_instance,
@@ -92,7 +94,7 @@ class TestAvroClient:
         with pytest.raises(AvroClientError):
             test_avro_encoder_instance.encode_batch(BAD_BATCH)
 
-    def test_decode_record_binary(self, test_avro_decoder_instance):
+    def test_decode_record(self, test_avro_decoder_instance):
         TEST_DECODED_RECORD = {"patron_id": 123, "library_branch": "aa"}
         TEST_ENCODED_RECORD = b'\xf6\x01\x02\x04aa'
         assert test_avro_decoder_instance.decode_record(
