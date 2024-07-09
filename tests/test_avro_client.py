@@ -39,8 +39,8 @@ class TestAvroClient:
                              test_avro_decoder_instance):
         assert test_avro_encoder_instance.schema == _TEST_SCHEMA['data'][
             'schema']
-        # assert test_avro_decoder_instance.schema == _TEST_SCHEMA['data'][
-        #     'schema']
+        assert test_avro_decoder_instance.schema == _TEST_SCHEMA['data'][
+            'schema']
 
     def test_request_error(self, requests_mock):
         requests_mock.get('https://test_schema_url', exc=ConnectTimeout)

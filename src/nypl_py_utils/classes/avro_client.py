@@ -16,7 +16,7 @@ class AvroClient:
     """
 
     def __init__(self, platform_schema_url):
-        self.logger = create_log('avro_encoder')
+        self.logger = create_log("avro_encoder")
         self.schema = avro.schema.parse(
             self.get_json_schema(platform_schema_url))
 
@@ -25,29 +25,35 @@ class AvroClient:
         Fetches a JSON response from the input Platform API endpoint and
         interprets it as an Avro schema.
         """
-        self.logger.info('Fetching Avro schema from {}'.format(
-            platform_schema_url))
+        self.logger.info(
+            "Fetching Avro schema from {}".format(platform_schema_url))
         try:
             response = requests.get(platform_schema_url)
             response.raise_for_status()
         except RequestException as e:
             self.logger.error(
-                'Failed to retrieve schema from {url}: {error}'.format(
-                    url=platform_schema_url, error=e))
+                "Failed to retrieve schema from {url}: {error}".format(
+                    url=platform_schema_url, error=e
+                )
+            )
             raise AvroClientError(
-                'Failed to retrieve schema from {url}: {error}'.format(
-                    url=platform_schema_url, error=e)) from None
+                "Failed to retrieve schema from {url}: {error}".format(
+                    url=platform_schema_url, error=e
+                )
+            ) from None
 
         try:
             json_response = response.json()
-            return json_response['data']['schema']
+            return json_response["data"]["schema"]
         except (JSONDecodeError, KeyError) as e:
             self.logger.error(
-                'Retrieved schema is malformed: {errorType} {errorMessage}'
-                .format(errorType=type(e), errorMessage=e))
+                "Retrieved schema is malformed: {errorType} {errorMessage}"
+                .format(errorType=type(e), errorMessage=e)
+            )
             raise AvroClientError(
-                'Retrieved schema is malformed: {errorType} {errorMessage}'
-                .format(errorType=type(e), errorMessage=e)) from None
+                "Retrieved schema is malformed: {errorType} {errorMessage}"
+                .format(errorType=type(e), errorMessage=e)
+            ) from None
 
 
 class AvroEncoder(AvroClient):
@@ -63,8 +69,9 @@ class AvroEncoder(AvroClient):
         Returns the encoded record as a byte string.
         """
         self.logger.debug(
-            'Encoding record using {schema} schema'.format(
-                schema=self.schema.name))
+            "Encoding record using {schema} schema".format(
+                schema=self.schema.name)
+        )
         datum_writer = DatumWriter(self.schema)
         with BytesIO() as output_stream:
             encoder = BinaryEncoder(output_stream)
@@ -72,9 +79,9 @@ class AvroEncoder(AvroClient):
                 datum_writer.write(record, encoder)
                 return output_stream.getvalue()
             except AvroException as e:
-                self.logger.error('Failed to encode record: {}'.format(e))
+                self.logger.error("Failed to encode record: {}".format(e))
                 raise AvroClientError(
-                    'Failed to encode record: {}'.format(e)) from None
+                    "Failed to encode record: {}".format(e)) from None
 
     def encode_batch(self, record_list):
         """
@@ -83,8 +90,10 @@ class AvroEncoder(AvroClient):
         Returns a list of byte strings where each string is an encoded record.
         """
         self.logger.info(
-            'Encoding ({num_rec}) records using {schema} schema'.format(
-                num_rec=len(record_list), schema=self.schema.name))
+            "Encoding ({num_rec}) records using {schema} schema".format(
+                num_rec=len(record_list), schema=self.schema.name
+            )
+        )
         encoded_records = []
         datum_writer = DatumWriter(self.schema)
         with BytesIO() as output_stream:
@@ -96,9 +105,10 @@ class AvroEncoder(AvroClient):
                     output_stream.seek(0)
                     output_stream.truncate(0)
                 except AvroException as e:
-                    self.logger.error('Failed to encode record: {}'.format(e))
+                    self.logger.error("Failed to encode record: {}".format(e))
                     raise AvroClientError(
-                        'Failed to encode record: {}'.format(e)) from None
+                        "Failed to encode record: {}".format(e)
+                    ) from None
         return encoded_records
 
 
@@ -115,35 +125,37 @@ class AvroDecoder(AvroClient):
 
         Returns a dictionary where each key is a field in the schema.
         """
-        self.logger.info('Decoding {rec} using {schema} schema'
-                         .format(rec=record, schema=self.schema.name))
+        self.logger.info(
+            "Decoding {rec} using {schema} schema".format(
+                rec=record, schema=self.schema.name
+            )
+        )
         bytes_input = base64.b64decode(record) if (
             isinstance(record, str)) else record
-        return self._decode_binary(bytes_input)
-
-    def _decode_binary(self, record):
         datum_reader = DatumReader(self.schema)
-        with BytesIO(record) as input_stream:
+        with BytesIO(bytes_input) as input_stream:
             decoder = BinaryDecoder(input_stream)
             try:
                 return datum_reader.read(decoder)
             except Exception as e:
-                self.logger.error('Failed to decode record: {}'.format(e))
+                self.logger.error("Failed to decode record: {}".format(e))
                 raise AvroClientError(
-                    'Failed to decode record: {}'.format(e)) from None
+                    "Failed to decode record: {}".format(e)) from None
 
     def decode_batch(self, record_list):
         """
         Decodes a list of JSON records using the given Avro schema.
 
-        Returns a list of strings where each string is an decoded record.
+        Returns a list of strings where each string is a decoded record.
         """
         self.logger.info(
-            'Encoding ({num_rec}) records using {schema} schema'.format(
-                num_rec=len(record_list), schema=self.schema.name))
+            "Decoding ({num_rec}) records using {schema} schema".format(
+                num_rec=len(record_list), schema=self.schema.name
+            )
+        )
         decoded_records = []
         for record in record_list:
-            decoded_record = self._decode_binary(record)
+            decoded_record = self.decode_record(record)
             decoded_records.append(decoded_record)
         return decoded_records
 
