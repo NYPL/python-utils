@@ -78,7 +78,7 @@ Oauth2 Client using path: {request_path}. Retry #{retries}')
 
     def put(self, request_path, **kwargs):
         """
-        Issue an HTTP POST on the given request_path
+        Issue an HTTP PUT on the given request_path
         """
         return self._do_http_method('PUT', request_path, **kwargs)
 
