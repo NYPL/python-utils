@@ -75,7 +75,7 @@ Oauth2 Client using path: {request_path}. Retry #{retries}')
         """
         kwargs['json'] = json
         return self._do_http_method('POST', request_path, **kwargs)
-    
+
     def put(self, request_path, **kwargs):
         """
         Issue an HTTP POST on the given request_path
