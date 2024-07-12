@@ -76,10 +76,11 @@ Oauth2 Client using path: {request_path}. Retry #{retries}')
         kwargs['json'] = json
         return self._do_http_method('POST', request_path, **kwargs)
 
-    def put(self, request_path, **kwargs):
+    def put(self, request_path, json, **kwargs):
         """
-        Issue an HTTP PUT on the given request_path
+        Issue an HTTP PUT on the given request_path with given JSON body
         """
+        kwargs['json'] = json
         return self._do_http_method('PUT', request_path, **kwargs)
 
     def patch(self, request_path, json, **kwargs):
