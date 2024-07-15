@@ -1,5 +1,4 @@
 import avro.schema
-import base64
 import requests
 
 from avro.errors import AvroException
@@ -130,10 +129,8 @@ class AvroDecoder(AvroClient):
                 rec=record, schema=self.schema.name
             )
         )
-        bytes_input = base64.b64decode(record) if (
-            isinstance(record, str)) else record
         datum_reader = DatumReader(self.schema)
-        with BytesIO(bytes_input) as input_stream:
+        with BytesIO(record) as input_stream:
             decoder = BinaryDecoder(input_stream)
             try:
                 return datum_reader.read(decoder)
