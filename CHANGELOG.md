@@ -1,5 +1,5 @@
 # Changelog
-## v1.2.0 7/8/24
+## v1.2.0 7/17/24
 - Generalized Avro functions and separated encoding/decoding behavior.
 
 ## v1.1.5 6/6/24

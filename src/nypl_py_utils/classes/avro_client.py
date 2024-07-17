@@ -119,8 +119,7 @@ class AvroDecoder(AvroClient):
 
     def decode_record(self, record):
         """
-        Decodes a single record represented either as a byte or
-        base64 string, using the given Avro schema.
+        Decodes a single record represented using the given Avro schema.
 
         Returns a dictionary where each key is a field in the schema.
         """

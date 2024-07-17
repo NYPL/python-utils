@@ -22,7 +22,6 @@ _TEST_SCHEMA = {'data': {'schema': json.dumps({
 
 
 class TestAvroClient:
-
     @pytest.fixture
     def test_avro_encoder_instance(self, requests_mock):
         requests_mock.get(
