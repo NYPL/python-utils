@@ -119,7 +119,8 @@ class AvroDecoder(AvroClient):
 
     def decode_record(self, record):
         """
-        Decodes a single record represented using the given Avro schema.
+        Decodes a single record represented using the given Avro
+        schema. Input must be a bytes-like object.
 
         Returns a dictionary where each key is a field in the schema.
         """
@@ -140,7 +141,8 @@ class AvroDecoder(AvroClient):
 
     def decode_batch(self, record_list):
         """
-        Decodes a list of JSON records using the given Avro schema.
+        Decodes a list of JSON records using the given Avro schema. Input
+        must be a list of bytes-like objects.
 
         Returns a list of strings where each string is a decoded record.
         """
