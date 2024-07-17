@@ -1,4 +1,11 @@
 # Changelog
+## v1.2.0 7/17/24
+- Generalized Avro functions and separated encoding/decoding behavior.
+
+## v1.1.6 7/12/24
+- Add put functionality to Oauth2 Client
+- Update pyproject version 
+
 ## v1.1.5 6/6/24
 - Use executemany instead of execute when appropriate in RedshiftClient.execute_transaction
 
