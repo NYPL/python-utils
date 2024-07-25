@@ -2,7 +2,7 @@ import json
 import pytest
 
 from nypl_py_utils.classes.avro_client import (
-    AvroClient, AvroClientError, AvroDecoder, AvroEncoder)
+    AvroClientError, AvroDecoder, AvroEncoder)
 from requests.exceptions import ConnectTimeout
 
 _TEST_SCHEMA = {'data': {'schema': json.dumps({
