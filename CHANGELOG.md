@@ -1,4 +1,7 @@
 # Changelog
+## v1.3.0 7/25/24
+- Added SecretsManager client
+
 ## v1.2.0 7/17/24
 - Generalized Avro functions and separated encoding/decoding behavior.
 
