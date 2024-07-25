@@ -5,6 +5,7 @@ from avro.errors import AvroException
 from avro.io import BinaryDecoder, BinaryEncoder, DatumReader, DatumWriter
 from io import BytesIO
 from nypl_py_utils.functions.log_helper import create_log
+from requests.adapters import HTTPAdapter, Retry
 from requests.exceptions import JSONDecodeError, RequestException
 
 
@@ -16,6 +17,12 @@ class AvroClient:
 
     def __init__(self, platform_schema_url):
         self.logger = create_log("avro_encoder")
+        retry_policy = Retry(total=2, backoff_factor=4,
+                             status_forcelist=[500, 502, 503, 504],
+                             allowed_methods=frozenset(['GET']))
+        self.session = requests.Session()
+        self.session.mount("https://",
+                           HTTPAdapter(max_retries=retry_policy))
         self.schema = avro.schema.parse(
             self.get_json_schema(platform_schema_url))
 
@@ -27,7 +34,9 @@ class AvroClient:
         self.logger.info(
             "Fetching Avro schema from {}".format(platform_schema_url))
         try:
-            response = requests.get(platform_schema_url)
+
+            response = self.session.get(url=platform_schema_url,
+                                        timeout=300)
             response.raise_for_status()
         except RequestException as e:
             self.logger.error(
