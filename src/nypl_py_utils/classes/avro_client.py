@@ -37,7 +37,7 @@ class AvroClient:
         try:
 
             response = self.session.get(url=platform_schema_url,
-                                        timeout=300)
+                                        timeout=60)
             response.raise_for_status()
         except Exception as e:
             self.logger.error(
