@@ -1,4 +1,3 @@
-import time
 import avro.schema
 import requests
 
@@ -7,7 +6,7 @@ from avro.io import BinaryDecoder, BinaryEncoder, DatumReader, DatumWriter
 from io import BytesIO
 from nypl_py_utils.functions.log_helper import create_log
 from requests.adapters import HTTPAdapter, Retry
-from requests.exceptions import JSONDecodeError, RequestException
+from requests.exceptions import JSONDecodeError
 
 
 class AvroClient:

@@ -1,12 +1,8 @@
 import json
 import pytest
-from unittest.mock import patch
-
-import requests
 
 from nypl_py_utils.classes.avro_client import (
-    AvroClient, AvroClientError, AvroDecoder, AvroEncoder)
-from requests import session
+    AvroClientError, AvroDecoder, AvroEncoder)
 from requests.exceptions import ConnectTimeout
 
 _TEST_SCHEMA = {'data': {'schema': json.dumps({
