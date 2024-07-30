@@ -25,26 +25,26 @@ class TestAvroClient:
     @pytest.fixture
     def test_avro_encoder_instance(self, requests_mock):
         requests_mock.get(
-            'https://test_schema_url', text=json.dumps(_TEST_SCHEMA))
-        return AvroEncoder('https://test_schema_url')
+            "https://test_schema_url", text=json.dumps(_TEST_SCHEMA))
+        return AvroEncoder("https://test_schema_url")
 
     @pytest.fixture
     def test_avro_decoder_instance(self, requests_mock):
         requests_mock.get(
-            'https://test_schema_url', text=json.dumps(_TEST_SCHEMA))
-        return AvroDecoder('https://test_schema_url')
+            "https://test_schema_url", text=json.dumps(_TEST_SCHEMA))
+        return AvroDecoder("https://test_schema_url")
 
-    def test_get_json_schema(self, test_avro_encoder_instance,
-                             test_avro_decoder_instance):
-        assert test_avro_encoder_instance.schema == _TEST_SCHEMA['data'][
-            'schema']
-        assert test_avro_decoder_instance.schema == _TEST_SCHEMA['data'][
-            'schema']
+    def test_get_json_schema_success(self, test_avro_encoder_instance,
+                                     test_avro_decoder_instance):
+        assert test_avro_encoder_instance.schema == _TEST_SCHEMA["data"][
+            "schema"]
+        assert test_avro_decoder_instance.schema == _TEST_SCHEMA["data"][
+            "schema"]
 
-    def test_request_error(self, requests_mock):
-        requests_mock.get('https://test_schema_url', exc=ConnectTimeout)
+    def test_get_json_schema_error(self, requests_mock):
+        requests_mock.get("https://test_schema_url", exc=ConnectTimeout)
         with pytest.raises(AvroClientError):
-            AvroEncoder('https://test_schema_url')
+            AvroEncoder("https://test_schema_url")
 
     def test_bad_json_error(self, requests_mock):
         requests_mock.get(
