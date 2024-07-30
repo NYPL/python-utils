@@ -7,6 +7,7 @@ This package contains common Python utility classes and functions.
 * Setting and retrieving a resource in S3
 * Decrypting values with KMS
 * Encoding and decoding records using a given Avro schema
+* Retrieving secrets from AWS Secrets Manager
 * Connecting to and querying a MySQL database
 * Connecting to and querying a PostgreSQL database
 * Connecting to and querying a PostgreSQL database using a connection pool
@@ -35,7 +36,7 @@ kinesis_client = KinesisClient(...)
 # Do not use any version below 1.0.0
 # All available optional dependencies can be found in pyproject.toml.
 # See the "Managing dependencies" section below for more details.
-nypl-py-utils[kinesis-client,config-helper]==1.1.2
+nypl-py-utils[kinesis-client,config-helper]==1.3.0
 ```
 
 ## Developing locally

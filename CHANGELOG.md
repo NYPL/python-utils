@@ -1,6 +1,12 @@
 # Changelog
+## v1.3.0 7/30/24
+- Added SecretsManager client
+
+## v1.2.1 7/25/24
+- Add retry for fetching Avro schemas
+
 ## v1.2.0 7/17/24
-- Generalized Avro functions and separated encoding/decoding behavior.
+- Generalized Avro functions and separated encoding/decoding behavior
 
 ## v1.1.6 7/12/24
 - Add put functionality to Oauth2 Client
