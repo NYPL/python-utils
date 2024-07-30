@@ -1,5 +1,5 @@
 # Changelog
-## v1.3.0 7/25/24
+## v1.3.0 7/30/24
 - Added SecretsManager client
 
 ## v1.2.1 7/25/24
