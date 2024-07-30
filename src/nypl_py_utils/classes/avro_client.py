@@ -1,3 +1,4 @@
+import time
 import avro.schema
 import requests
 
@@ -16,8 +17,8 @@ class AvroClient:
     """
 
     def __init__(self, platform_schema_url):
-        self.logger = create_log("avro_encoder")
-        retry_policy = Retry(total=2, backoff_factor=4,
+        self.logger = create_log("avro_client")
+        retry_policy = Retry(total=3, backoff_factor=45,
                              status_forcelist=[500, 502, 503, 504],
                              allowed_methods=frozenset(['GET']))
         self.session = requests.Session()
@@ -38,7 +39,7 @@ class AvroClient:
             response = self.session.get(url=platform_schema_url,
                                         timeout=300)
             response.raise_for_status()
-        except RequestException as e:
+        except Exception as e:
             self.logger.error(
                 "Failed to retrieve schema from {url}: {error}".format(
                     url=platform_schema_url, error=e
@@ -48,7 +49,7 @@ class AvroClient:
                 "Failed to retrieve schema from {url}: {error}".format(
                     url=platform_schema_url, error=e
                 )
-            ) from None
+            )
 
         try:
             json_response = response.json()

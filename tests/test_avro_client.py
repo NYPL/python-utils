@@ -1,8 +1,10 @@
 import json
 import pytest
+from unittest.mock import patch
 
 from nypl_py_utils.classes.avro_client import (
-    AvroClientError, AvroDecoder, AvroEncoder)
+    AvroClient, AvroClientError, AvroDecoder, AvroEncoder)
+from requests import session
 from requests.exceptions import ConnectTimeout
 
 _TEST_SCHEMA = {'data': {'schema': json.dumps({
@@ -36,15 +38,23 @@ class TestAvroClient:
 
     def test_get_json_schema_success(self, test_avro_encoder_instance,
                                      test_avro_decoder_instance):
-        assert test_avro_encoder_instance.schema == _TEST_SCHEMA['data'][
-            'schema']
-        assert test_avro_decoder_instance.schema == _TEST_SCHEMA['data'][
-            'schema']
+        assert test_avro_encoder_instance.schema == _TEST_SCHEMA["data"][
+            "schema"]
+        assert test_avro_decoder_instance.schema == _TEST_SCHEMA["data"][
+            "schema"]
 
-    def test_request_error(self, requests_mock):
-        requests_mock.get('https://test_schema_url', exc=ConnectTimeout)
+    def test_get_json_schema_error(self, requests_mock):
+        requests_mock.get("https://test_schema_url", exc=ConnectTimeout)
         with pytest.raises(AvroClientError):
-            AvroEncoder('https://test_schema_url')
+            AvroEncoder("https://test_schema_url")
+
+    def test_get_json_schema_success_on_retry(self, requests_mock):
+        requests_mock.get("https://test_schema_url",
+                          [{"exc": ConnectionError},
+                           {"text": str(_TEST_SCHEMA), "status_code": 200}])
+
+        test_avro_client = AvroClient("https://test_schema_url")
+        assert test_avro_client.get_json_schema == _TEST_SCHEMA["data"]["schema"]
 
     def test_bad_json_error(self, requests_mock):
         requests_mock.get(
