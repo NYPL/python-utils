@@ -36,7 +36,7 @@ kinesis_client = KinesisClient(...)
 # Do not use any version below 1.0.0
 # All available optional dependencies can be found in pyproject.toml.
 # See the "Managing dependencies" section below for more details.
-nypl-py-utils[kinesis-client,config-helper]==1.3.0
+nypl-py-utils[kinesis-client,config-helper]==1.3.1
 ```
 
 ## Developing locally
