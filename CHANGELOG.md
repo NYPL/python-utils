@@ -1,4 +1,7 @@
 # Changelog
+## v1.3.1 7/31/24
+- Replaced log statement in Avro client with debug
+
 ## v1.3.0 7/30/24
 - Added SecretsManager client
 
