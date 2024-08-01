@@ -133,7 +133,7 @@ class AvroDecoder(AvroClient):
 
         Returns a dictionary where each key is a field in the schema.
         """
-        self.logger.info(
+        self.logger.debug(
             "Decoding {rec} using {schema} schema".format(
                 rec=record, schema=self.schema.name
             )
