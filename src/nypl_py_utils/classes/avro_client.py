@@ -31,7 +31,7 @@ class AvroClient:
         Fetches a JSON response from the input Platform API endpoint and
         interprets it as an Avro schema.
         """
-        self.logger.debug(
+        self.logger.info(
             "Fetching Avro schema from {}".format(platform_schema_url))
         try:
 
@@ -133,7 +133,7 @@ class AvroDecoder(AvroClient):
 
         Returns a dictionary where each key is a field in the schema.
         """
-        self.logger.info(
+        self.logger.debug(
             "Decoding {rec} using {schema} schema".format(
                 rec=record, schema=self.schema.name
             )
