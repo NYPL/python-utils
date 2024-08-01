@@ -1,4 +1,7 @@
 # Changelog
+## v1.3.2 8/1/24
+- Replaced info statements with debug for security purposes
+
 ## v1.3.1 7/31/24
 - Replaced log statement in Avro client with debug
 
