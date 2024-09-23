@@ -1,4 +1,7 @@
 # Changelog
+## v1.4.0 9/23/24
+- Added SFTP client
+
 ## v1.3.2 8/1/24
 - Replaced info statements with debug for security purposes
 
