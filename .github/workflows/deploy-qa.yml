@@ -4,6 +4,10 @@ on:
   release:
     types: [ released ]
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   check_qa_tag:
     name: Check if the release is tagged as QA
@@ -26,10 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -54,5 +58,4 @@ jobs:
       - name: Publish distribution package to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+          repository-url: https://test.pypi.org/legacy/
