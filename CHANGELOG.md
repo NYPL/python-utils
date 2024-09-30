@@ -1,4 +1,13 @@
 # Changelog
+## v1.4.0 9/23/24
+- Added SFTP client
+
+## v1.3.2 8/1/24
+- Replaced info statements with debug for security purposes
+
+## v1.3.1 7/31/24
+- Replaced log statement in Avro client with debug
+
 ## v1.3.0 7/30/24
 - Added SecretsManager client
 
