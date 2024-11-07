@@ -30,9 +30,10 @@ class CloudLibraryClient:
         self.session.mount("https://",
                            HTTPAdapter(max_retries=retry_policy))
 
-    def get_library_events(self, start_date=None, end_date=None) -> requests.Response:
+    def get_library_events(self, start_date=None,
+                           end_date=None) -> requests.Response:
         """
-        Retrieves all the events related to library-owned items within the 
+        Retrieves all the events related to library-owned items within the
         optional timeframe. Pulls yesterday's events by default.
 
         start_date and end_date are optional parameters, and must be
@@ -47,32 +48,36 @@ class CloudLibraryClient:
             today, date_format) if end_date is None else end_date
 
         if start_date > end_date:
-            error_message = f"Start date {start_date} is greater than end date {end_date}, cannot retrieve library events"
+            error_message = (f"Start date {start_date} greater than end date "
+                             f"{end_date}, cannot retrieve library events")
             self.logger.error(error_message)
             raise CloudLibraryClientError(error_message)
 
         self.logger.info(
-            f"Fetching all library events in time frame {start_date} to {end_date}...")
+            (f"Fetching all library events in "
+             f"time frame {start_date} to {end_date}..."))
 
         path = f"data/cloudevents?startdate={start_date}&enddate={end_date}"
         response = self.request(path=path, method_type="GET")
         return response
 
-    def create_request_body(self, request_type, item_id, patron_id) -> str:
+    def create_request_body(self, request_type,
+                            item_id, patron_id) -> str:
         """
-        Helper function to generate request body when performing item 
-        and/or patron-specific functions (ex. checking out a title). 
+        Helper function to generate request body when performing item
+        and/or patron-specific functions (ex. checking out a title).
         """
-        request_template = "<%(request_type)s><ItemId>%(item_id)s</ItemId><PatronId>%(patron_id)s</PatronId></%(request_type)s>"
+        request_template = "<%(request_type)s><ItemId>%(item_id)s</ItemId><PatronId>%(patron_id)s</PatronId></%(request_type)s>" # noqa
         return request_template % {
             "request_type": request_type,
             "item_id": item_id,
             "patron_id": patron_id,
         }
 
-    def request(self, path, method_type="POST", body=None) -> requests.Response:
+    def request(self, path, method_type="POST",
+                body=None) -> requests.Response:
         """
-        Use this method to call specific paths in the cloudLibrary API. 
+        Use this method to call specific paths in the cloudLibrary API.
         This method is necessary for building headers/authorization.
         Example usage of this method is in the get_library_events function.
         """
@@ -121,7 +126,8 @@ class CloudLibraryClient:
 
         return headers
 
-    def _build_authorization(self, method_type, path) -> tuple[str, str]:
+    def _build_authorization(self, method_type,
+                             path) -> tuple[str, str]:
         now = datetime.now(timezone.utc).strftime(
             "%a, %d %b %Y %H:%M:%S GMT")
         message = "\n".join([now, method_type, path])

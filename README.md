@@ -14,6 +14,7 @@ This package contains common Python utility classes and functions.
 * Connecting to and querying a PostgreSQL database using a connection pool
 * Connecting to and querying Redshift
 * Making requests to the Oauth2 authenticated APIs such as NYPL Platform API and Sierra
+* Interacting with vendor APIs such as cloudLibrary
 
 ## Functions
 * Reading a YAML config file and putting the contents in os.environ -- see `config/sample.yaml` for an example of how the config file should be formatted
