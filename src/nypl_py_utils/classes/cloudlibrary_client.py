@@ -3,11 +3,11 @@ import hashlib
 import hmac
 import requests
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from nypl_py_utils.functions.log_helper import create_log
 from requests.adapters import HTTPAdapter, Retry
 
-_API_URL = "https://partner.yourcloudlibrary.com/cirrus/library"
+_API_URL = "https://partner.yourcloudlibrary.com"
 _VERSION = "3.0.2"
 
 
@@ -19,7 +19,6 @@ class CloudLibraryClient:
         self.library_id = library_id
         self.account_id = account_id
         self.account_key = account_key
-        self.base_url = f"{_API_URL}/{self.library_id}"
         self.setup_session()
 
     def setup_session(self):
@@ -31,21 +30,35 @@ class CloudLibraryClient:
         self.session.mount("https://",
                            HTTPAdapter(max_retries=retry_policy))
 
-    def get_library_events(self, start_date: str, end_date: str) -> requests.Response:
+    def get_library_events(self, start_date=None, end_date=None) -> requests.Response:
         """
         Retrieves all the events related to library-owned items within the 
         optional timeframe. Pulls yesterday's events by default.
-        """
-        yesterday = datetime.now() - timedelta(1)
-        yesterday_formatted = datetime.strftime(yesterday, "%Y-%m-%d")
-        start_date = yesterday_formatted if start_date is None else start_date
-        end_date = yesterday_formatted if end_date is None else end_date
 
-        path = f"data/cloudevents?startdate{start_date}&enddate={end_date}"
-        response = self.request(path, "GET")
+        start_date and end_date are optional parameters, and must be
+        formatted either YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS
+        """
+        date_format = "%Y-%m-%dT%H:%M:%S"
+        today = datetime.now(timezone.utc)
+        yesterday = today - timedelta(1)
+        start_date = datetime.strftime(
+            yesterday, date_format) if start_date is None else start_date
+        end_date = datetime.strftime(
+            today, date_format) if end_date is None else end_date
+
+        if start_date > end_date:
+            error_message = f"Start date {start_date} is greater than end date {end_date}, cannot retrieve library events"
+            self.logger.error(error_message)
+            raise CloudLibraryClientError(error_message)
+
+        self.logger.info(
+            f"Fetching all library events in time frame {start_date} to {end_date}...")
+
+        path = f"data/cloudevents?startdate={start_date}&enddate={end_date}"
+        response = self.request(path=path, method_type="GET")
         return response
 
-    def create_request_body_with_filter(self, request_type: str, item_id: str, patron_id: str) -> str:
+    def create_request_body(self, request_type, item_id, patron_id) -> str:
         """
         Helper function to generate request body when performing item 
         and/or patron-specific functions (ex. checking out a title). 
@@ -57,9 +70,15 @@ class CloudLibraryClient:
             "patron_id": patron_id,
         }
 
-    def request(self, path, body=None, method_type="GET") -> requests.Response:
-        headers = self._build_headers(method_type, path)
-        url = f"{self.base_url}/{path}"
+    def request(self, path, method_type="POST", body=None) -> requests.Response:
+        """
+        Use this method to call specific paths in the cloudLibrary API. 
+        This method is necessary for building headers/authorization.
+        Example usage of this method is in the get_library_events function.
+        """
+        extended_path = f"/cirrus/library/{self.library_id}/{path}"
+        headers = self._build_headers(method_type, extended_path)
+        url = f"{_API_URL}{extended_path}"
         method_type = method_type.upper()
 
         try:
@@ -86,12 +105,13 @@ class CloudLibraryClient:
 
         return response
 
-    def _build_headers(self, method_type: str, path: str) -> dict:
-        time, authorization = self._build_authorization(method_type, path)
+    def _build_headers(self, method_type, path) -> dict:
+        time, authorization = self._build_authorization(
+            method_type, path)
         headers = {
             "3mcl-Datetime": time,
             "3mcl-Authorization": authorization,
-            "3mcl-Version": _VERSION,
+            "3mcl-APIVersion": _VERSION,
         }
 
         if method_type == "GET":
@@ -101,15 +121,16 @@ class CloudLibraryClient:
 
         return headers
 
-    def _build_authorization(self, method_type: str, path: str) -> tuple[str, str]:
-        now = datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
+    def _build_authorization(self, method_type, path) -> tuple[str, str]:
+        now = datetime.now(timezone.utc).strftime(
+            "%a, %d %b %Y %H:%M:%S GMT")
         message = "\n".join([now, method_type, path])
         digest = hmac.new(
             self.account_key.encode("utf-8"),
             msg=message.encode("utf-8"),
             digestmod=hashlib.sha256
         ).digest()
-        signature = base64.standard_b64decode(digest).decode()
+        signature = base64.standard_b64encode(digest).decode()
 
         return now, f"3MCLAUTH {self.account_id}:{signature}"
 
