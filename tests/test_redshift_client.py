@@ -2,6 +2,7 @@ import pytest
 
 from nypl_py_utils.classes.redshift_client import (
     RedshiftClient, RedshiftClientError)
+from redshift_connector import InterfaceError
 
 
 class TestRedshiftClient:
@@ -22,6 +23,20 @@ class TestRedshiftClient:
                                                    user='test_user',
                                                    password='test_password',
                                                    sslmode='verify-full')
+
+    def test_connect_retry_success(self, mock_redshift_conn, test_instance,
+                                   mocker):
+        mock_redshift_conn.side_effect = [InterfaceError(), mocker.MagicMock()]
+        test_instance.connect(retry_count=2, backoff_factor=0)
+        assert mock_redshift_conn.call_count == 2
+
+    def test_connect_retry_fail(self, mock_redshift_conn, test_instance):
+        mock_redshift_conn.side_effect = InterfaceError()
+
+        with pytest.raises(RedshiftClientError):
+            test_instance.connect(retry_count=2, backoff_factor=0)
+
+        assert mock_redshift_conn.call_count == 3
 
     def test_execute_query(self, mock_redshift_conn, test_instance, mocker):
         test_instance.connect()
@@ -60,7 +75,8 @@ class TestRedshiftClient:
             test_instance.execute_query('test query')
 
         test_instance.conn.rollback.assert_called_once()
-        mock_cursor.close.assert_called_once()
+        mock_cursor.close.assert_called()
+        test_instance.conn.close.assert_called_once()
 
     def test_execute_transaction(self, mock_redshift_conn, test_instance,
                                  mocker):
@@ -119,7 +135,8 @@ class TestRedshiftClient:
             mocker.call('query 2', None)])
         test_instance.conn.commit.assert_not_called()
         test_instance.conn.rollback.assert_called_once()
-        mock_cursor.close.assert_called_once()
+        mock_cursor.close.assert_called()
+        test_instance.conn.close.assert_called_once()
 
     def test_close_connection(self, mock_redshift_conn, test_instance):
         test_instance.connect()
