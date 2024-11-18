@@ -4,6 +4,7 @@ import hmac
 import requests
 
 from datetime import datetime, timedelta, timezone
+from enum import Enum
 from nypl_py_utils.functions.log_helper import create_log
 from requests.adapters import HTTPAdapter, Retry
 
@@ -19,10 +20,8 @@ class CloudLibraryClient:
         self.library_id = library_id
         self.account_id = account_id
         self.account_key = account_key
-        self.setup_session()
 
-    def setup_session(self):
-        """Authenticate and set up HTTP session"""
+        # authenticate & set up HTTP session
         retry_policy = Retry(total=3, backoff_factor=45,
                              status_forcelist=[500, 502, 503, 504],
                              allowed_methods=frozenset(["GET"]))
@@ -74,7 +73,7 @@ class CloudLibraryClient:
             "patron_id": patron_id,
         }
 
-    def request(self, path, method_type="POST",
+    def request(self, path, method_type="GET",
                 body=None) -> requests.Response:
         """
         Use this method to call specific paths in the cloudLibrary API.
@@ -87,21 +86,21 @@ class CloudLibraryClient:
         method_type = method_type.upper()
 
         try:
-            if method_type == "GET":
-                response = self.session.get(url=url,
-                                            data=body,
-                                            headers=headers,
-                                            timeout=60)
-            elif method_type == "PUT":
+            if method_type == "PUT":
                 response = self.session.put(url=url,
                                             data=body,
                                             headers=headers,
                                             timeout=60)
-            else:
+            elif method_type == "POST":
                 response = self.session.post(url=url,
                                              data=body,
                                              headers=headers,
                                              timeout=60)
+            else:
+                response = self.session.get(url=url,
+                                            data=body,
+                                            headers=headers,
+                                            timeout=60)
             response.raise_for_status()
         except Exception as e:
             error_message = f"Failed to retrieve response from {url}: {e}"
@@ -144,3 +143,11 @@ class CloudLibraryClient:
 class CloudLibraryClientError(Exception):
     def __init__(self, message=None):
         self.message = message
+
+class CloudLibraryEventType(Enum):
+    CHECKIN = "Patron checked in or returned an item"
+    CHECKOUT = "Patron checked out or borrowed an item"
+    HOLD = "Patron placed a hold request on a book"
+    PURCHASE = "Library purchased an item (this could be another copy of a currently owned item)"
+    RESERVED = "The title which is currently on hold for the patron is now available for checkout"
+    REMOVED = "A copy of a item has expired or was deliberately removed from library stock"
