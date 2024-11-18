@@ -4,7 +4,6 @@ import hmac
 import requests
 
 from datetime import datetime, timedelta, timezone
-from enum import Enum
 from nypl_py_utils.functions.log_helper import create_log
 from requests.adapters import HTTPAdapter, Retry
 
@@ -46,7 +45,8 @@ class CloudLibraryClient:
         end_date = datetime.strftime(
             today, date_format) if end_date is None else end_date
 
-        if start_date > end_date:
+        if (datetime.strptime(start_date, date_format) >
+                datetime.strptime(end_date, date_format)):
             error_message = (f"Start date {start_date} greater than end date "
                              f"{end_date}, cannot retrieve library events")
             self.logger.error(error_message)
@@ -143,11 +143,3 @@ class CloudLibraryClient:
 class CloudLibraryClientError(Exception):
     def __init__(self, message=None):
         self.message = message
-
-class CloudLibraryEventType(Enum):
-    CHECKIN = "Patron checked in or returned an item"
-    CHECKOUT = "Patron checked out or borrowed an item"
-    HOLD = "Patron placed a hold request on a book"
-    PURCHASE = "Library purchased an item (this could be another copy of a currently owned item)"
-    RESERVED = "The title which is currently on hold for the patron is now available for checkout"
-    REMOVED = "A copy of a item has expired or was deliberately removed from library stock"

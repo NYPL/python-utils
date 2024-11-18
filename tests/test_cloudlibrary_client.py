@@ -40,41 +40,50 @@ class TestCloudLibraryClient:
             "library_id", "account_id", "account_key")
 
     def test_get_library_events_success_no_args(
-            self, test_instance, requests_mock, caplog):
+            self, test_instance, mocker, caplog):
         start = "2024-11-10T10:00:00"
         end = "2024-11-11T10:00:00"
-        requests_mock.get(
-            f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}",  # noqa
-            text=_TEST_LIBRARY_EVENTS_RESPONSE)
+        mock_request = mocker.patch(
+            "nypl_py_utils.classes.cloudlibrary_client.CloudLibraryClient.request", # noqa
+            return_value=_TEST_LIBRARY_EVENTS_RESPONSE)
         response = test_instance.get_library_events()
 
-        assert response.text == _TEST_LIBRARY_EVENTS_RESPONSE
+        mock_request.assert_called_once_with(
+            path=f"data/cloudevents?startdate={start}&enddate={end}",
+            method_type="GET")
+        assert response == _TEST_LIBRARY_EVENTS_RESPONSE
         assert (f"Fetching all library events in time frame "
                 f"{start} to {end}...") in caplog.text
 
     def test_get_library_events_success_with_start_and_end_date(
-            self, test_instance, requests_mock, caplog):
+            self, test_instance, mocker, caplog):
         start = "2024-11-01T10:00:00"
         end = "2024-11-05T10:00:00"
-        requests_mock.get(
-            f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}",  # noqa
-            text=_TEST_LIBRARY_EVENTS_RESPONSE)
+        mock_request = mocker.patch(
+            "nypl_py_utils.classes.cloudlibrary_client.CloudLibraryClient.request", # noqa
+            return_value=_TEST_LIBRARY_EVENTS_RESPONSE)
         response = test_instance.get_library_events(start, end)
 
-        assert response.text == _TEST_LIBRARY_EVENTS_RESPONSE
+        mock_request.assert_called_once_with(
+            path=f"data/cloudevents?startdate={start}&enddate={end}",
+            method_type="GET")
+        assert response == _TEST_LIBRARY_EVENTS_RESPONSE
         assert (f"Fetching all library events in time frame "
                 f"{start} to {end}...") in caplog.text
 
     def test_get_library_events_success_with_no_end_date(
-            self, test_instance, requests_mock, caplog):
+            self, test_instance, mocker, caplog):
         start = "2024-11-01T09:00:00"
         end = "2024-11-11T10:00:00"
-        requests_mock.get(
-            f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}",  # noqa
-            text=_TEST_LIBRARY_EVENTS_RESPONSE)
+        mock_request = mocker.patch(
+            "nypl_py_utils.classes.cloudlibrary_client.CloudLibraryClient.request", # noqa
+            return_value=_TEST_LIBRARY_EVENTS_RESPONSE)
         response = test_instance.get_library_events(start)
 
-        assert response.text == _TEST_LIBRARY_EVENTS_RESPONSE
+        mock_request.assert_called_once_with(
+            path=f"data/cloudevents?startdate={start}&enddate={end}",
+            method_type="GET")
+        assert response == _TEST_LIBRARY_EVENTS_RESPONSE
         assert (f"Fetching all library events in time frame "
                 f"{start} to {end}...") in caplog.text
 
@@ -88,7 +97,39 @@ class TestCloudLibraryClient:
         assert (f"Start date {start} greater than end date "
                 f"{end}, cannot retrieve library events") in caplog.text
 
-    def test_get_library_events_failure(self, test_instance, requests_mock):
+    def test_get_library_events_exception_when_connection_timeout(
+            self, test_instance, requests_mock):
+        start = "2024-11-10T10:00:00"
+        end = "2024-11-11T10:00:00"
+
+        # We're making sure that a separate error during a sub-method will
+        # still result in CloudLibraryClientError
+        requests_mock.get(
+            f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}",  # noqa
+            exc=ConnectTimeout)
+
+        with pytest.raises(CloudLibraryClientError):
+            test_instance.get_library_events()
+
+    def test_request_success(self, test_instance, mocker):
+        start = "2024-11-10T10:00:00"
+        end = "2024-11-11T10:00:00"
+        expected_headers = {'3mcl-Datetime': 'Mon, 11 Nov 2024 10:00:00 GMT',
+                            '3mcl-Authorization': '3MCLAUTH account_id:KipNmbVsmsT2xPjP4oHAaR3n00JgcszfF6mQRffBoRk=', # noqa
+                            '3mcl-APIVersion': '3.0.2',
+                            'Accept': 'application/xml'}
+        mock_get = mocker.patch("requests.sessions.Session.get")
+        test_instance.request(
+            path=f"data/cloudevents?startdate={start}&enddate={end}",
+            method_type="GET")
+
+        mock_get.assert_called_once_with(
+            url=f"{_API_URL}library_id/data/cloudevents?startdate={start}&enddate={end}", # noqa
+            data=None,
+            headers=expected_headers,
+            timeout=60)
+
+    def test_request_failure(self, test_instance, requests_mock, caplog):
         start = "2024-11-10T10:00:00"
         end = "2024-11-11T10:00:00"
         requests_mock.get(
@@ -96,7 +137,9 @@ class TestCloudLibraryClient:
             exc=ConnectTimeout)
 
         with pytest.raises(CloudLibraryClientError):
-            test_instance.get_library_events()
+            test_instance.request(
+                path=f"data/cloudevents?startdate={start}&enddate={end}",
+                method_type="GET")
 
     def test_create_request_body_success(self, test_instance):
         request_type = "CheckoutRequest"
