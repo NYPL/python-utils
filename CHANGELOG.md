@@ -1,5 +1,5 @@
 # Changelog
-## v1.5.0 11/4/24
+## v1.5.0 11/19/24
 - Added cloudLibrary client
 
 ## v1.4.0 9/23/24
