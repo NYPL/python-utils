@@ -79,6 +79,9 @@ class CloudLibraryClient:
         Use this method to call specific paths in the cloudLibrary API.
         This method is necessary for building headers/authorization.
         Example usage of this method is in the get_library_events function.
+
+        Returns Response object by default -- you will need to parse the object
+        to retrieve text, status code, etc.
         """
         extended_path = f"/cirrus/library/{self.library_id}/{path}"
         headers = self._build_headers(method_type, extended_path)

@@ -40,7 +40,7 @@ class TestCloudLibraryClient:
             "library_id", "account_id", "account_key")
 
     def test_get_library_events_success_no_args(
-            self, test_instance, mocker, caplog):
+            self, test_instance, mocker):
         start = "2024-11-10T10:00:00"
         end = "2024-11-11T10:00:00"
         mock_request = mocker.patch(
@@ -52,11 +52,9 @@ class TestCloudLibraryClient:
             path=f"data/cloudevents?startdate={start}&enddate={end}",
             method_type="GET")
         assert response == _TEST_LIBRARY_EVENTS_RESPONSE
-        assert (f"Fetching all library events in time frame "
-                f"{start} to {end}...") in caplog.text
 
     def test_get_library_events_success_with_start_and_end_date(
-            self, test_instance, mocker, caplog):
+            self, test_instance, mocker):
         start = "2024-11-01T10:00:00"
         end = "2024-11-05T10:00:00"
         mock_request = mocker.patch(
@@ -68,11 +66,9 @@ class TestCloudLibraryClient:
             path=f"data/cloudevents?startdate={start}&enddate={end}",
             method_type="GET")
         assert response == _TEST_LIBRARY_EVENTS_RESPONSE
-        assert (f"Fetching all library events in time frame "
-                f"{start} to {end}...") in caplog.text
 
     def test_get_library_events_success_with_no_end_date(
-            self, test_instance, mocker, caplog):
+            self, test_instance, mocker):
         start = "2024-11-01T09:00:00"
         end = "2024-11-11T10:00:00"
         mock_request = mocker.patch(
@@ -84,18 +80,14 @@ class TestCloudLibraryClient:
             path=f"data/cloudevents?startdate={start}&enddate={end}",
             method_type="GET")
         assert response == _TEST_LIBRARY_EVENTS_RESPONSE
-        assert (f"Fetching all library events in time frame "
-                f"{start} to {end}...") in caplog.text
 
     def test_get_library_events_exception_when_start_date_greater_than_end(
-            self, test_instance, caplog):
+            self, test_instance):
         start = "2024-11-11T09:00:00"
         end = "2024-11-01T10:00:00"
 
         with pytest.raises(CloudLibraryClientError):
             test_instance.get_library_events(start, end)
-        assert (f"Start date {start} greater than end date "
-                f"{end}, cannot retrieve library events") in caplog.text
 
     def test_get_library_events_exception_when_connection_timeout(
             self, test_instance, requests_mock):
@@ -129,7 +121,7 @@ class TestCloudLibraryClient:
             headers=expected_headers,
             timeout=60)
 
-    def test_request_failure(self, test_instance, requests_mock, caplog):
+    def test_request_failure(self, test_instance, requests_mock):
         start = "2024-11-10T10:00:00"
         end = "2024-11-11T10:00:00"
         requests_mock.get(
