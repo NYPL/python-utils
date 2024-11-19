@@ -32,7 +32,7 @@ class CloudLibraryClient:
                            end_date=None) -> requests.Response:
         """
         Retrieves all the events related to library-owned items within the
-        optional timeframe. Pulls yesterday's events by default.
+        optional timeframe. Pulls past 24 hours of events by default.
 
         start_date and end_date are optional parameters, and must be
         formatted either YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS
@@ -80,8 +80,8 @@ class CloudLibraryClient:
         This method is necessary for building headers/authorization.
         Example usage of this method is in the get_library_events function.
 
-        Returns Response object by default -- you will need to parse the object
-        to retrieve text, status code, etc.
+        Returns Response object by default -- you will need to parse this
+        object to retrieve response text, status codes, etc.
         """
         extended_path = f"/cirrus/library/{self.library_id}/{path}"
         headers = self._build_headers(method_type, extended_path)

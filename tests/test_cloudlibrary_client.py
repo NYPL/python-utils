@@ -103,23 +103,72 @@ class TestCloudLibraryClient:
         with pytest.raises(CloudLibraryClientError):
             test_instance.get_library_events()
 
-    def test_request_success(self, test_instance, mocker):
+    def test_get_request_success(self, test_instance, requests_mock):
         start = "2024-11-10T10:00:00"
         end = "2024-11-11T10:00:00"
-        expected_headers = {'3mcl-Datetime': 'Mon, 11 Nov 2024 10:00:00 GMT',
-                            '3mcl-Authorization': '3MCLAUTH account_id:KipNmbVsmsT2xPjP4oHAaR3n00JgcszfF6mQRffBoRk=', # noqa
-                            '3mcl-APIVersion': '3.0.2',
-                            'Accept': 'application/xml'}
-        mock_get = mocker.patch("requests.sessions.Session.get")
-        test_instance.request(
+        url = f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}" # noqa
+        expected_headers = {"3mcl-Datetime": "Mon, 11 Nov 2024 10:00:00 GMT",
+                            "3mcl-Authorization": "3MCLAUTH account_id:KipNmbVsmsT2xPjP4oHAaR3n00JgcszfF6mQRffBoRk=", # noqa
+                            "3mcl-APIVersion": "3.0.2",
+                            "Accept": "application/xml"}
+        requests_mock.get(
+            url=url, text=_TEST_LIBRARY_EVENTS_RESPONSE)
+
+        response = test_instance.request(
             path=f"data/cloudevents?startdate={start}&enddate={end}",
             method_type="GET")
 
-        mock_get.assert_called_once_with(
-            url=f"{_API_URL}library_id/data/cloudevents?startdate={start}&enddate={end}", # noqa
-            data=None,
-            headers=expected_headers,
-            timeout=60)
+        assert response.text == _TEST_LIBRARY_EVENTS_RESPONSE
+        assert requests_mock.request_history[0].method == "GET"
+        assert requests_mock.request_history[0].url == url
+        assert expected_headers.items() <= dict(
+            requests_mock.request_history[0].headers).items()
+
+    def test_put_request_success(self, test_instance, requests_mock):
+        start = "2024-11-10T10:00:00"
+        end = "2024-11-11T10:00:00"
+        url = f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}" # noqa
+        expected_headers = {"3mcl-Datetime": "Mon, 11 Nov 2024 10:00:00 GMT",
+                            "3mcl-Authorization": "3MCLAUTH account_id:3M773C6ZVWmB/ISoSjQy9iBp48T4tUWhoNOwXaseMtE=", # noqa
+                            "3mcl-APIVersion": "3.0.2",
+                            "Content-Type": "application/xml"}
+        requests_mock.put(
+            url=url, text=_TEST_LIBRARY_EVENTS_RESPONSE)
+
+        response = test_instance.request(
+            path=f"data/cloudevents?startdate={start}&enddate={end}",
+            method_type="PUT",
+            body={"test": "test"})
+
+        assert response.text == _TEST_LIBRARY_EVENTS_RESPONSE
+        assert requests_mock.request_history[0].method == "PUT"
+        assert requests_mock.request_history[0].url == url
+        assert requests_mock.request_history[0].body == "test=test"
+        assert expected_headers.items() <= dict(
+            requests_mock.request_history[0].headers).items()
+
+    def test_post_request_success(self, test_instance, requests_mock):
+        start = "2024-11-10T10:00:00"
+        end = "2024-11-11T10:00:00"
+        url = f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}" # noqa
+        expected_headers = {"3mcl-Datetime": "Mon, 11 Nov 2024 10:00:00 GMT",
+                            "3mcl-Authorization": "3MCLAUTH account_id:vF0zI6ee1w1PbTLQ9EVvtxRly2vpCRxdBdAHb8DZQ4E=", # noqa
+                            "3mcl-APIVersion": "3.0.2",
+                            "Content-Type": "application/xml"}
+        requests_mock.post(
+            url=url, text=_TEST_LIBRARY_EVENTS_RESPONSE)
+
+        response = test_instance.request(
+            path=f"data/cloudevents?startdate={start}&enddate={end}",
+            method_type="POST",
+            body={"test": "test"})
+
+        assert response.text == _TEST_LIBRARY_EVENTS_RESPONSE
+        assert requests_mock.request_history[0].method == "POST"
+        assert requests_mock.request_history[0].url == url
+        assert requests_mock.request_history[0].body == "test=test"
+        assert expected_headers.items() <= dict(
+            requests_mock.request_history[0].headers).items()
 
     def test_request_failure(self, test_instance, requests_mock):
         start = "2024-11-10T10:00:00"
