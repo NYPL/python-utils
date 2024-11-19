@@ -121,6 +121,7 @@ class TestCloudLibraryClient:
         assert response.text == _TEST_LIBRARY_EVENTS_RESPONSE
         assert requests_mock.request_history[0].method == "GET"
         assert requests_mock.request_history[0].url == url
+        assert requests_mock.request_history[0].body is None
         assert expected_headers.items() <= dict(
             requests_mock.request_history[0].headers).items()
 
