@@ -14,6 +14,7 @@ This package contains common Python utility classes and functions.
 * Connecting to and querying a PostgreSQL database using a connection pool
 * Connecting to and querying Redshift
 * Making requests to the Oauth2 authenticated APIs such as NYPL Platform API and Sierra
+* Interacting with vendor APIs such as cloudLibrary
 
 ## Functions
 * Reading a YAML config file and putting the contents in os.environ -- see `config/sample.yaml` for an example of how the config file should be formatted
@@ -37,7 +38,7 @@ kinesis_client = KinesisClient(...)
 # Do not use any version below 1.0.0
 # All available optional dependencies can be found in pyproject.toml.
 # See the "Managing dependencies" section below for more details.
-nypl-py-utils[kinesis-client,config-helper]==1.4.0
+nypl-py-utils[kinesis-client,config-helper]==1.5.0
 ```
 
 ## Developing locally
@@ -63,7 +64,7 @@ The optional dependency sets also give the developer the option to manually list
 ### Using PostgreSQLClient in an AWS Lambda
 Because `psycopg` requires a statically linked version of the `libpq` library, the `PostgreSQLClient` cannot be installed as-is in an AWS Lambda function. Instead, it must be packaged as follows:
 ```bash
-pip install --target ./package nypl-py-utils[postgresql-client]==1.4.0
+pip install --target ./package nypl-py-utils[postgresql-client]==1.5.0
 
 pip install \
     --platform manylinux2014_x86_64 \
