@@ -1,9 +1,12 @@
 # Changelog
-## v1.5.0 11/15/24
+## v1.6.0 11/20/24
 - Use executemany instead of execute when appropriate in PostgreSQLClient
 - Add capability to retry connecting to a database to the MySQL, PostgreSQL, and Redshift clients
 - Automatically close database connection upon error in the MySQL, PostgreSQL, and Redshift clients
 - Delete old PostgreSQLPoolClient, which was not production ready
+
+## v1.5.0 11/19/24
+- Added cloudLibrary client
 
 ## v1.4.0 9/23/24
 - Added SFTP client
