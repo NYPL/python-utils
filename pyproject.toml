@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nypl_py_utils"
-version = "1.5.0"
+version = "1.6.0"
 authors = [
   { name="Aaron Friedman", email="aaronfriedman@nypl.org" },
 ]
@@ -71,7 +71,7 @@ obfuscation-helper = [
     "bcrypt>=4.0.1"
 ]
 patron-data-helper = [
-    "nypl_py_utils[postgresql-client,redshift-client]>=1.5.0",
+    "nypl_py_utils[postgresql-client,redshift-client]>=1.6.0",
     "pandas>=2.2.2"
 ]
 research-catalog-identifier-helper = [
