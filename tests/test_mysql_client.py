@@ -60,7 +60,7 @@ class TestMySQLClient:
             'test query %s %s', query_params=('a', 1)) is None
         mock_cursor.execute.assert_called_once_with('test query %s %s',
                                                     ('a', 1))
-        test_instance.conn.commit.called_once()
+        test_instance.conn.commit.assert_called_once()
         mock_cursor.close.assert_called_once()
 
     def test_execute_query_with_exception(

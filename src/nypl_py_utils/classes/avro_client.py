@@ -5,7 +5,8 @@ from avro.errors import AvroException
 from avro.io import BinaryDecoder, BinaryEncoder, DatumReader, DatumWriter
 from io import BytesIO
 from nypl_py_utils.functions.log_helper import create_log
-from requests.exceptions import JSONDecodeError, RequestException
+from requests.adapters import HTTPAdapter, Retry
+from requests.exceptions import JSONDecodeError
 
 
 class AvroClient:
@@ -15,7 +16,13 @@ class AvroClient:
     """
 
     def __init__(self, platform_schema_url):
-        self.logger = create_log("avro_encoder")
+        self.logger = create_log("avro_client")
+        retry_policy = Retry(total=3, backoff_factor=45,
+                             status_forcelist=[500, 502, 503, 504],
+                             allowed_methods=frozenset(['GET']))
+        self.session = requests.Session()
+        self.session.mount("https://",
+                           HTTPAdapter(max_retries=retry_policy))
         self.schema = avro.schema.parse(
             self.get_json_schema(platform_schema_url))
 
@@ -27,9 +34,11 @@ class AvroClient:
         self.logger.info(
             "Fetching Avro schema from {}".format(platform_schema_url))
         try:
-            response = requests.get(platform_schema_url)
+
+            response = self.session.get(url=platform_schema_url,
+                                        timeout=60)
             response.raise_for_status()
-        except RequestException as e:
+        except Exception as e:
             self.logger.error(
                 "Failed to retrieve schema from {url}: {error}".format(
                     url=platform_schema_url, error=e
@@ -39,7 +48,7 @@ class AvroClient:
                 "Failed to retrieve schema from {url}: {error}".format(
                     url=platform_schema_url, error=e
                 )
-            ) from None
+            )
 
         try:
             json_response = response.json()
@@ -124,7 +133,7 @@ class AvroDecoder(AvroClient):
 
         Returns a dictionary where each key is a field in the schema.
         """
-        self.logger.info(
+        self.logger.debug(
             "Decoding {rec} using {schema} schema".format(
                 rec=record, schema=self.schema.name
             )

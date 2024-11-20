@@ -21,10 +21,10 @@ class TestKmsClient:
 
     def test_decrypt(self, test_instance):
         test_instance.kms_client.decrypt.return_value = _TEST_DECRYPTION
-        assert test_instance.kms_client.decrypt.called_once_with(
-            CiphertextBlob=b'test-encrypted-value')
         assert test_instance.decrypt(
             _TEST_ENCRYPTED_VALUE) == 'test-decrypted-value'
+        test_instance.kms_client.decrypt.assert_called_once_with(
+            CiphertextBlob=b'test-encrypted-value')
 
     def test_base64_error(self, test_instance):
         with pytest.raises(KmsClientError):
