@@ -82,26 +82,29 @@ class TestCloudLibraryClient:
         assert response == _TEST_LIBRARY_EVENTS_RESPONSE
 
     def test_get_library_events_exception_when_start_date_greater_than_end(
-            self, test_instance):
+            self, test_instance, caplog):
         start = "2024-11-11T09:00:00"
         end = "2024-11-01T10:00:00"
 
         with pytest.raises(CloudLibraryClientError):
             test_instance.get_library_events(start, end)
+        assert (f"Start date {start} greater than end date {end}, "
+                f"cannot retrieve library events") in caplog.text
 
     def test_get_library_events_exception_when_connection_timeout(
-            self, test_instance, requests_mock):
+            self, test_instance, requests_mock, caplog):
         start = "2024-11-10T10:00:00"
         end = "2024-11-11T10:00:00"
+        url = f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}"  # noqa
 
         # We're making sure that a separate error during a sub-method will
         # still result in CloudLibraryClientError
         requests_mock.get(
-            f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}",  # noqa
-            exc=ConnectTimeout)
+            url, exc=ConnectTimeout)
 
         with pytest.raises(CloudLibraryClientError):
             test_instance.get_library_events()
+        assert (f"Failed to retrieve response from {url}") in caplog.text
 
     def test_get_request_success(self, test_instance, requests_mock):
         start = "2024-11-10T10:00:00"
@@ -171,17 +174,20 @@ class TestCloudLibraryClient:
         assert expected_headers.items() <= dict(
             requests_mock.request_history[0].headers).items()
 
-    def test_request_failure(self, test_instance, requests_mock):
+    def test_request_failure(self, test_instance,
+                             requests_mock, caplog):
         start = "2024-11-10T10:00:00"
         end = "2024-11-11T10:00:00"
+        url = f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}" # noqa
         requests_mock.get(
-            f"{_API_URL}{test_instance.library_id}/data/cloudevents?startdate={start}&enddate={end}",  # noqa
-            exc=ConnectTimeout)
+            url, exc=ConnectTimeout)
 
         with pytest.raises(CloudLibraryClientError):
             test_instance.request(
                 path=f"data/cloudevents?startdate={start}&enddate={end}",
                 method_type="GET")
+        assert (f"Failed to retrieve response from "
+                f"{url}: ConnectTimeout()") in caplog.text
 
     def test_create_request_body_success(self, test_instance):
         request_type = "CheckoutRequest"

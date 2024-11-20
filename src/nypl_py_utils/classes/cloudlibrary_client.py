@@ -106,7 +106,8 @@ class CloudLibraryClient:
                                             timeout=60)
             response.raise_for_status()
         except Exception as e:
-            error_message = f"Failed to retrieve response from {url}: {e}"
+            error_message = (f"Failed to retrieve response from {url}: "
+                             f"{repr(e)}")
             self.logger.error(error_message)
             raise CloudLibraryClientError(error_message)
 
