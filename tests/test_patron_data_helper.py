@@ -237,6 +237,7 @@ class TestPatronDataHelper:
             columns=["patron_id", "postal_code", "geoid"])
 
         mock_redshift_client = mocker.MagicMock()
+        mock_redshift_client.database = "test_db"
         mock_redshift_client.execute_query.return_value = \
             _TEST_REDSHIFT_RESPONSE
 
@@ -256,7 +257,8 @@ class TestPatronDataHelper:
         # directly. The workaround is to test the total length of the query
         # plus that each id appears in it.
         query = mock_redshift_client.execute_query.call_args[0][0]
-        assert len(query) == 175
+        assert len(query) == 124
+        assert "patron_info_test_db" in query
         for el in ["'obf1'", "'obf2'", "'obf3'", "'obf4'"]:
             assert el in query
 
