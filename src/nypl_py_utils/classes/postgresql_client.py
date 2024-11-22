@@ -1,4 +1,5 @@
 import psycopg
+import time
 
 from nypl_py_utils.functions.log_helper import create_log
 
@@ -6,43 +7,53 @@ from nypl_py_utils.functions.log_helper import create_log
 class PostgreSQLClient:
     """Client for managing individual connections to a PostgreSQL database"""
 
-    def __init__(self, host, port, db_name, user, password):
+    def __init__(self, host, port, database, user, password):
         self.logger = create_log('postgresql_client')
         self.conn = None
         self.conn_info = ('postgresql://{user}:{password}@{host}:{port}/'
-                          '{db_name}').format(user=user, password=password,
-                                              host=host, port=port,
-                                              db_name=db_name)
+                          '{database}').format(user=user, password=password,
+                                               host=host, port=port,
+                                               database=database)
+        self.database = database
 
-        self.db_name = db_name
-
-    def connect(self, **kwargs):
+    def connect(self, retry_count=0, backoff_factor=5, **kwargs):
         """
         Connects to a PostgreSQL database using the given credentials.
 
-        Keyword args can be passed into the connection to set certain options.
-        All possible arguments can be found here:
-        https://www.psycopg.org/psycopg3/docs/api/connections.html#psycopg.Connection.connect.
-
-        Common arguments include:
-            autocommit: bool
-                Whether to automatically commit each query rather than running
-                them as part of a transaction. By default False.
-            row_factory: RowFactory
-                A psycopg RowFactory that determines how the data will be
-                returned. Defaults to tuple_row, which returns the rows as a
-                list of tuples.
+        Parameters
+        ----------
+        retry_count: int, optional
+            The number of times to retry connecting before throwing an error.
+            By default no retry occurs.
+        backoff_factor: int, optional
+            The backoff factor when retrying. The amount of time to wait before
+            retrying is backoff_factor ** number_of_retries_made.
+        kwargs:
+            All possible arguments (such as the row_factory) can be found here:
+            https://www.psycopg.org/psycopg3/docs/api/connections.html#psycopg.Connection.connect
         """
-        self.logger.info('Connecting to {} database'.format(self.db_name))
-        try:
-            self.conn = psycopg.connect(self.conn_info, **kwargs)
-        except psycopg.Error as e:
-            self.logger.error(
-                'Error connecting to {name} database: {error}'.format(
-                    name=self.db_name, error=e))
-            raise PostgreSQLClientError(
-                'Error connecting to {name} database: {error}'.format(
-                    name=self.db_name, error=e)) from None
+        self.logger.info('Connecting to {} database'.format(self.database))
+        attempt_count = 0
+        while attempt_count <= retry_count:
+            try:
+                try:
+                    self.conn = psycopg.connect(self.conn_info, **kwargs)
+                    break
+                except (psycopg.OperationalError,
+                        psycopg.errors.ConnectionTimeout):
+                    if attempt_count < retry_count:
+                        self.logger.info('Failed to connect -- retrying')
+                        time.sleep(backoff_factor ** attempt_count)
+                        attempt_count += 1
+                    else:
+                        raise
+            except Exception as e:
+                self.logger.error(
+                    'Error connecting to {name} database: {error}'.format(
+                        name=self.database, error=e))
+                raise PostgreSQLClientError(
+                    'Error connecting to {name} database: {error}'.format(
+                        name=self.database, error=e)) from None
 
     def execute_query(self, query, query_params=None, **kwargs):
         """
@@ -53,7 +64,11 @@ class PostgreSQLClient:
         query: str
             The query to execute
         query_params: sequence, optional
-            The values to be used in a parameterized query
+            The values to be used in a parameterized query. The values can be
+            for a single insert query -- e.g. execute_query(
+                "INSERT INTO x VALUES (%s, %s)", (1, "a"))
+            or for multiple -- e.g execute_transaction(
+                "INSERT INTO x VALUES (%s, %s)", [(1, "a"), (2, "b")])
         kwargs:
             All possible arguments can be found here:
             https://www.psycopg.org/psycopg3/docs/api/cursors.html#psycopg.Cursor.execute
@@ -65,30 +80,38 @@ class PostgreSQLClient:
             based on the connection's row_factory if there's something to
             return (even if the result set is empty).
         """
-        self.logger.info('Querying {} database'.format(self.db_name))
+        self.logger.info('Querying {} database'.format(self.database))
         self.logger.debug('Executing query {}'.format(query))
         try:
             cursor = self.conn.cursor()
-            cursor.execute(query, query_params, **kwargs)
+            if query_params is not None and all(
+                isinstance(param, tuple) or isinstance(param, list)
+                for param in query_params
+            ):
+                cursor.executemany(query, query_params, **kwargs)
+            else:
+                cursor.execute(query, query_params, **kwargs)
             self.conn.commit()
             return None if cursor.description is None else cursor.fetchall()
         except Exception as e:
             self.conn.rollback()
+            cursor.close()
+            self.close_connection()
             self.logger.error(
                 ('Error executing {name} database query \'{query}\': '
                     '{error}').format(
-                    name=self.db_name, query=query, error=e))
+                    name=self.database, query=query, error=e))
             raise PostgreSQLClientError(
                 ('Error executing {name} database query \'{query}\': '
                     '{error}').format(
-                    name=self.db_name, query=query, error=e)) from None
+                    name=self.database, query=query, error=e)) from None
         finally:
             cursor.close()
 
     def close_connection(self):
         """Closes the database connection"""
         self.logger.debug('Closing {} database connection'.format(
-            self.db_name))
+            self.database))
         self.conn.close()
 
 

@@ -9,7 +9,7 @@ help:
 	@echo "    lint project files using the flake8 linter"
 
 test:
-	pytest
+	pytest -W ignore::FutureWarning
 
 lint:
 	flake8 --exclude *env
