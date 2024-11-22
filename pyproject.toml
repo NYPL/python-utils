@@ -71,7 +71,7 @@ obfuscation-helper = [
     "bcrypt>=4.0.1"
 ]
 patron-data-helper = [
-    "nypl_py_utils[postgresql-client,redshift-client]>=1.6.0",
+    "nypl_py_utils[postgresql-client,redshift-client]>=1.1.5",
     "pandas>=2.2.2"
 ]
 research-catalog-identifier-helper = [
