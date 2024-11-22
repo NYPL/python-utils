@@ -1,3 +1,4 @@
+import mysql.connector
 import pytest
 
 from nypl_py_utils.classes.mysql_client import MySQLClient, MySQLClientError
@@ -21,6 +22,21 @@ class TestMySQLClient:
                                                 database='test_database',
                                                 user='test_user',
                                                 password='test_password')
+
+    def test_connect_retry_success(self, mock_mysql_conn, test_instance,
+                                   mocker):
+        mock_mysql_conn.side_effect = [mysql.connector.Error,
+                                       mocker.MagicMock()]
+        test_instance.connect(retry_count=2, backoff_factor=0)
+        assert mock_mysql_conn.call_count == 2
+
+    def test_connect_retry_fail(self, mock_mysql_conn, test_instance):
+        mock_mysql_conn.side_effect = mysql.connector.Error
+
+        with pytest.raises(MySQLClientError):
+            test_instance.connect(retry_count=2, backoff_factor=0)
+
+        assert mock_mysql_conn.call_count == 3
 
     def test_execute_read_query(self, mock_mysql_conn, test_instance, mocker):
         test_instance.connect()
@@ -75,7 +91,8 @@ class TestMySQLClient:
             test_instance.execute_query('test query')
 
         test_instance.conn.rollback.assert_called_once()
-        mock_cursor.close.assert_called_once()
+        mock_cursor.close.assert_called()
+        test_instance.conn.close.assert_called_once()
 
     def test_close_connection(self, mock_mysql_conn, test_instance):
         test_instance.connect()

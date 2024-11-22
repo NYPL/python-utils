@@ -1,6 +1,6 @@
 import redshift_connector
+import time
 
-from botocore.exceptions import ClientError
 from nypl_py_utils.functions.log_helper import create_log
 
 
@@ -15,23 +15,45 @@ class RedshiftClient:
         self.user = user
         self.password = password
 
-    def connect(self):
-        """Connects to a Redshift database using the given credentials"""
+    def connect(self, retry_count=0, backoff_factor=5):
+        """
+        Connects to a Redshift database using the given credentials.
+
+        Parameters
+        ----------
+        retry_count: int, optional
+            The number of times to retry connecting before throwing an error.
+            By default no retry occurs.
+        backoff_factor: int, optional
+            The backoff factor when retrying. The amount of time to wait before
+            retrying is backoff_factor ** number_of_retries_made.
+        """
         self.logger.info('Connecting to {} database'.format(self.database))
-        try:
-            self.conn = redshift_connector.connect(
-                host=self.host,
-                database=self.database,
-                user=self.user,
-                password=self.password,
-                sslmode='verify-full')
-        except ClientError as e:
-            self.logger.error(
-                'Error connecting to {name} database: {error}'.format(
-                    name=self.database, error=e))
-            raise RedshiftClientError(
-                'Error connecting to {name} database: {error}'.format(
-                    name=self.database, error=e)) from None
+        attempt_count = 0
+        while attempt_count <= retry_count:
+            try:
+                try:
+                    self.conn = redshift_connector.connect(
+                        host=self.host,
+                        database=self.database,
+                        user=self.user,
+                        password=self.password,
+                        sslmode='verify-full')
+                    break
+                except (redshift_connector.InterfaceError):
+                    if attempt_count < retry_count:
+                        self.logger.info('Failed to connect -- retrying')
+                        time.sleep(backoff_factor ** attempt_count)
+                        attempt_count += 1
+                    else:
+                        raise
+            except Exception as e:
+                self.logger.error(
+                    'Error connecting to {name} database: {error}'.format(
+                        name=self.database, error=e))
+                raise RedshiftClientError(
+                    'Error connecting to {name} database: {error}'.format(
+                        name=self.database, error=e)) from None
 
     def execute_query(self, query, dataframe=False):
         """
@@ -62,6 +84,8 @@ class RedshiftClient:
                 return cursor.fetchall()
         except Exception as e:
             self.conn.rollback()
+            cursor.close()
+            self.close_connection()
             self.logger.error(
                 ('Error executing {name} database query \'{query}\': {error}')
                 .format(name=self.database, query=query, error=e))
@@ -83,10 +107,9 @@ class RedshiftClient:
             A list of tuples containing a query and the values to be used if
             the query is parameterized (or None if it's not). The values can
             be for a single insert query -- e.g. execute_transaction(
-                "INSERT INTO x VALUES (%s, %s)", (1, "a"))
+                [("INSERT INTO x VALUES (%s, %s)", (1, "a"))])
             or for multiple -- e.g execute_transaction(
-                "INSERT INTO x VALUES (%s, %s)", [(1, "a"), (2, "b")])
-
+                [("INSERT INTO x VALUES (%s, %s)", [(1, "a"), (2, "b")])])
         """
         self.logger.info('Executing transaction against {} database'.format(
             self.database))
@@ -106,6 +129,8 @@ class RedshiftClient:
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
+            cursor.close()
+            self.close_connection()
             self.logger.error(
                 ('Error executing {name} database transaction: {error}')
                 .format(name=self.database, error=e))
