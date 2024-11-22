@@ -38,6 +38,7 @@ class PostgreSQLClient:
             try:
                 try:
                     self.conn = psycopg.connect(self.conn_info, **kwargs)
+                    break
                 except (psycopg.OperationalError,
                         psycopg.errors.ConnectionTimeout):
                     if attempt_count < retry_count:
@@ -46,8 +47,6 @@ class PostgreSQLClient:
                         attempt_count += 1
                     else:
                         raise
-                else:
-                    break
             except Exception as e:
                 self.logger.error(
                     'Error connecting to {name} database: {error}'.format(

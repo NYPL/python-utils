@@ -44,6 +44,7 @@ class MySQLClient:
                         user=self.user,
                         password=self.password,
                         **kwargs)
+                    break
                 except (mysql.connector.Error):
                     if attempt_count < retry_count:
                         self.logger.info('Failed to connect -- retrying')
@@ -51,8 +52,6 @@ class MySQLClient:
                         attempt_count += 1
                     else:
                         raise
-                else:
-                    break
             except Exception as e:
                 self.logger.error(
                     'Error connecting to {name} database: {error}'.format(
