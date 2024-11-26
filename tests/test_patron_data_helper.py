@@ -19,36 +19,39 @@ _TEST_SIERRA_BARCODE_RESPONSE = [
 ]
 
 _TEST_SIERRA_IDS_RESPONSE = [
-    (1, "b1", 11, 12, "aa"), (2, "b2", 21, 22, "bb"),
-    (3, "b3", 31, 32, "cc"), (33, "b3", 331, 332, "ccc"),
-    (4, None, None, None, None), (5, "b5", 51, 52, "dd"),
-    (6, "b6", 61, 62, "ee"), (6, "b66", 61, 62, "ee"),
-    (7, "b7", 71, 72, "ff"), (7, "b77", 771, 772, "ffff"),
-    (None, "b4", None, None, None), (5, "b5", 51, 52, "dd"),
+    (1, "1", "b1", 11, 12, "aa"), (2, "2", "b2", 21, 22, "bb"),
+    (3, "3", "b3", 31, 32, "cc"), (33, "3", "b3", 331, 332, "ccc"),
+    (4, None, None, None, None, None), (5, "5", "b5", 51, 52, "dd"),
+    (6, "6", "b6", 61, 62, "ee"), (6, "6", "b66", 61, 62, "ee"),
+    (7, "7", "b7", 71, 72, "ff"), (7, "77", "b77", 771, 772, "ffff"),
+    (None, "4", "b4", None, None, None), (5, "5", "b5", 51, 52, "dd"),
 ]
 
 _TEST_BARCODE_DF = pd.DataFrame(
-    [[f"b{i}", str(i)] for i in range(1, 10)],
+    [[f"b{i}", str(i)] for i in range(1, 11)],
     columns=["barcode", "patron_id"])
 _TEST_BARCODE_DF["patron_id"] = _TEST_BARCODE_DF["patron_id"].astype("string")
 
 _TEST_ID_DF = pd.DataFrame(
-    [["1", "b1", 11, 12, "aa"],  # one perfect match
-     ["2", "b5", 21, 22, "bb"],  # different id and barcode matches
+    [["1", "1", "b1", 11, 12, "aa"],  # one perfect match
+     ["2", "2", "b5", 21, 22, "bb"],  # different id and barcode matches
      # no match for patron id 3
-     ["4", "b4", 41, 42, "dd"],  # two matches -- one perfect, one imperfect
-     ["4", "b444", 43, 44, "dddd"],
-     ["5", "b555", 51, 52, "eeee"],  # two matches -- both imperfect
-     ["5", "b556", 53, 54, "eeef"],
-     ["6", "b6", 61, 62, "ffff"],  # two matches -- both perfect
-     ["6", "b6", 63, 64, "fffg"],
-     ["7", "b777", 71, 72, "gg"],  # two matches -- same except barcode
-     ["7", "b778", 71, 72, "gg"],
-     ["8", None, 81, 82, "hh"],  # one imperfect match/no barcode
-     ["9", "b9", None, None, None]],  # one perfect match/all null fields
-    columns=["patron_id", "barcode", "ptype_code", "pcode3",
+     ["4", "4", "b4", 41, 42, "dd"],  # two matches -- perfect and imperfect
+     ["4", "4", "b444", 43, 44, "dddd"],
+     ["5", "5", "b555", 51, 52, "eeee"],  # two matches -- both imperfect
+     ["5", "5", "b556", 53, 54, "eeef"],
+     ["6", "6", "b6", 61, 62, "ffff"],  # two matches -- both perfect
+     ["6", "6", "b6", 63, 64, "fffg"],
+     ["7", "7", "b777", 71, 72, "gg"],  # two matches -- same but barcode
+     ["7", "7", "b778", 71, 72, "gg"],
+     ["8", "88", "b8", 81, 82, "hh"],  # two matches -- same but record_num
+     ["8", "89", "b8", 81, 82, "hh"],
+     ["9", "9", None, 91, 92, "ii"],  # one match/no barcode
+     ["10", "10", "b10", None, None, None]],  # one match/all null fields
+    columns=["patron_id", "record_num", "barcode", "ptype_code", "pcode3",
              "patron_home_library_code"])
-_TEST_ID_DF["patron_id"] = _TEST_ID_DF["patron_id"].astype("string")
+_TEST_ID_DF[["patron_id", "record_num"]] = _TEST_ID_DF[
+    ["patron_id", "record_num"]].astype("string")
 
 
 class TestPatronDataHelper:
@@ -108,16 +111,20 @@ class TestPatronDataHelper:
                 remove_duplicates=False
             ))
 
-    def test_get_sierra_patron_data_from_ids(self, mocker):
+    def test_get_sierra_patron_data_from_ids_pat_ids(self, mocker):
         RESULT = pd.DataFrame(
-            [["1", "b1", 11, 12, "aa"], ["2", "b2", 21, 22, "bb"],
-             ["3", "b3", 31, 32, "cc"], ["33", "b3", 331, 332, "ccc"],
-             ["4", None, None, None, None],
-             ["5", "b5", 51, 52, "dd"], ["6", "b6", 61, 62, "ee"],
-             ["6", "b66", 61, 62, "ee"], ["7", "b7", 71, 72, "ff"],
-             ["7", "b77", 771, 772, "ffff"]],
-            columns=["patron_id", "barcode", "ptype_code", "pcode3",
-                     "patron_home_library_code"])
+            [["1", "1", "b1", 11, 12, "aa"],
+             ["2", "2", "b2", 21, 22, "bb"],
+             ["3", "3", "b3", 31, 32, "cc"],
+             ["33", "3", "b3", 331, 332, "ccc"],
+             ["4", None, None, None, None, None],
+             ["5", "5", "b5", 51, 52, "dd"],
+             ["6", "6", "b6", 61, 62, "ee"],
+             ["6", "6", "b66", 61, 62, "ee"],
+             ["7", "7", "b7", 71, 72, "ff"],
+             ["7", "77", "b77", 771, 772, "ffff"]],
+            columns=["patron_id", "record_num", "barcode", "ptype_code",
+                     "pcode3", "patron_home_library_code"])
         RESULT["patron_id"] = RESULT["patron_id"].astype("string")
 
         mock_sierra_client = mocker.MagicMock()
@@ -137,7 +144,48 @@ class TestPatronDataHelper:
         # directly. The workaround is to test the total length of the query
         # plus that each id appears in it.
         query = mock_sierra_client.execute_query.call_args[0][0]
-        assert len(query) == 257
+        assert len(query) == 269
+        assert "WHERE id IN" in query
+        for el in range(1, 9):
+            assert str(el) in query
+
+    def test_get_sierra_patron_data_from_ids_record_nums(self, mocker):
+        RESULT = pd.DataFrame(
+            [["1", "1", "b1", 11., 12., "aa"],
+             ["2", "2", "b2", 21., 22., "bb"],
+             ["3", "3", "b3", 31., 32., "cc"],
+             ["33", "3", "b3", 331., 332., "ccc"],
+             ["5", "5", "b5", 51., 52., "dd"],
+             ["6", "6", "b6", 61., 62., "ee"],
+             ["6", "6", "b66", 61., 62., "ee"],
+             ["7", "7", "b7", 71., 72., "ff"],
+             ["7", "77", "b77", 771., 772., "ffff"]],
+            columns=["patron_id", "record_num", "barcode", "ptype_code",
+                     "pcode3", "patron_home_library_code"],
+            index=[0, 1, 2, 3, 5, 6, 7, 8, 9])
+        RESULT[["patron_id", "record_num"]] = RESULT[
+            ["patron_id", "record_num"]].astype("string")
+
+        mock_sierra_client = mocker.MagicMock()
+        mock_sierra_client.execute_query.return_value = \
+            _TEST_SIERRA_IDS_RESPONSE
+
+        assert_frame_equal(
+            RESULT, get_sierra_patron_data_from_ids(
+                mock_sierra_client, [str(el) for el in range(1, 9)] + ["1",],
+                use_record_num=True,
+            ))
+
+        mock_sierra_client.connect.assert_called_once()
+        mock_sierra_client.execute_query.assert_called_once()
+        mock_sierra_client.close_connection.assert_called_once()
+
+        # Because the set of record_nums is unordered, it can't be tested
+        # directly. The workaround is to test the total length of the query
+        # plus that each id appears in it.
+        query = mock_sierra_client.execute_query.call_args[0][0]
+        assert len(query) == 277
+        assert "WHERE record_num IN" in query
         for el in range(1, 9):
             assert str(el) in query
 
@@ -152,14 +200,18 @@ class TestPatronDataHelper:
         mock_sierra_client.execute_query.assert_called_once()
         mock_sierra_client.close_connection.assert_not_called()
 
-    def test_get_sierra_patron_data_from_ids_without_duplicates(self, mocker):
+    def test_get_sierra_patron_data_from_ids_without_duplicates_pat_ids(
+            self, mocker):
         RESULT = pd.DataFrame(
-            [["1", "b1", 11, 12, "aa"], ["2", "b2", 21, 22, "bb"],
-             ["3", "b3", 31, 32, "cc"], ["33", "b3", 331, 332, "ccc"],
-             ["4", None, None, None, None], ["5", "b5", 51, 52, "dd"],
-             ["6", "b6", 61, 62, "ee"]],
-            columns=["patron_id", "barcode", "ptype_code", "pcode3",
-                     "patron_home_library_code"])
+            [["1", "1", "b1", 11, 12, "aa"],
+             ["2", "2", "b2", 21, 22, "bb"],
+             ["3", "3", "b3", 31, 32, "cc"],
+             ["33", "3", "b3", 331, 332, "ccc"],
+             ["4", None, None, None, None, None],
+             ["5", "5", "b5", 51, 52, "dd"],
+             ["6", "6", "b6", 61, 62, "ee"]],
+            columns=["patron_id", "record_num", "barcode", "ptype_code",
+                     "pcode3", "patron_home_library_code"])
         RESULT["patron_id"] = RESULT["patron_id"].astype("string")
 
         mock_sierra_client = mocker.MagicMock()
@@ -172,22 +224,49 @@ class TestPatronDataHelper:
                 remove_duplicates=True
             ))
 
+    def test_get_sierra_patron_data_from_ids_without_duplicates_record_nums(
+            self, mocker):
+        RESULT = pd.DataFrame(
+            [["1", "1", "b1", 11., 12., "aa"],
+             ["2", "2", "b2", 21., 22., "bb"],
+             ["5", "5", "b5", 51., 52., "dd"],
+             ["6", "6", "b6", 61., 62., "ee"],
+             ["7", "7", "b7", 71., 72., "ff"],
+             ["7", "77", "b77", 771., 772., "ffff"]],
+            columns=["patron_id", "record_num", "barcode", "ptype_code",
+                     "pcode3", "patron_home_library_code"],
+            index=[0, 1, 5, 6, 8, 9])
+        RESULT[["patron_id", "record_num"]] = RESULT[
+            ["patron_id", "record_num"]].astype("string")
+
+        mock_sierra_client = mocker.MagicMock()
+        mock_sierra_client.execute_query.return_value = \
+            _TEST_SIERRA_IDS_RESPONSE
+
+        assert_frame_equal(
+            RESULT, get_sierra_patron_data_from_ids(
+                mock_sierra_client, [str(el) for el in range(1, 9)],
+                remove_duplicates=True, use_record_num=True,
+            ))
+
     def test_get_sierra_patron_data_from_barcodes(self, mocker):
         RESULT = pd.DataFrame(
-            [["b1", "1", 11, 12, "aa"],
-             ["b4", "4", 41, 42, "dd"],
-             ["b6", "6", None, None, None],
-             ["b9", "9", None, None, None],
-             ["b2", "2", 21, 22, "bb"],
-             ["b3", "3", None, None, None],
-             ["b5", "5", None, None, None],
-             ["b7", "7", 71, 72, "gg"],
-             ["b8", "8", 81, 82, "hh"]],
-            columns=["barcode", "patron_id", "ptype_code", "pcode3",
-                     "patron_home_library_code"])
-        RESULT["patron_id"] = RESULT["patron_id"].astype("string")
-        TEST_BARCODES = [f"b{i}" for i in range(1, 11)] + ["b1",]
-        TEST_IDS = pd.Series([str(i) for i in range(1, 10)],
+            [["b1", "1", "1", 11, 12, "aa"],
+             ["b4", "4", "4", 41, 42, "dd"],
+             ["b6", "6", None, None, None, None],
+             ["b8", "8", "88", 81, 82, "hh"],
+             ["b10", "10", "10", None, None, None],
+             ["b2", "2", "2", 21, 22, "bb"],
+             ["b3", "3", None, None, None, None],
+             ["b5", "5", None, None, None, None],
+             ["b7", "7", "7", 71, 72, "gg"],
+             ["b9", "9", "9", 91, 92, "ii"]],
+            columns=["barcode", "patron_id", "record_num", "ptype_code",
+                     "pcode3", "patron_home_library_code"])
+        RESULT[["patron_id", "record_num"]] = RESULT[
+            ["patron_id", "record_num"]].astype("string")
+        TEST_BARCODES = [f"b{i}" for i in range(1, 12)] + ["b1",]
+        TEST_IDS = pd.Series([str(i) for i in range(1, 11)],
                              dtype="string", name="patron_id")
         mocked_barcodes_method = mocker.patch(
             "nypl_py_utils.functions.patron_data_helper.barcodes_to_patron_ids",  # noqa: E501
