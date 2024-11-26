@@ -20,7 +20,7 @@ This package contains common Python utility classes and functions.
 * Creating a logger in the appropriate format
 * Obfuscating a value using bcrypt
 * Parsing/building Research Catalog identifiers
-* Mapping between barcodes and Sierra patron ids plus getting patron data from Sierra and Redshift using those ids
+* Mapping between barcodes and Sierra patron ids plus getting patron data from Sierra and Redshift using those ids or record_nums
 
 ## Usage
 ```python
