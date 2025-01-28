@@ -53,7 +53,7 @@ class CloudLibraryClient:
         else:
             self.logger.info("Fetching all library events "
                              "from the past day...")
-        
+
         response = self.request(path=path, method_type="GET")
         return response
 
