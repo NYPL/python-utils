@@ -1,4 +1,7 @@
 # Changelog
+## v1.6.3 1/27/25
+- Add capability to pull cloudLibrary events by the millisecond
+
 ## v1.6.2 12/2/24
 - Add record_num capability to patron_data_helper
 
