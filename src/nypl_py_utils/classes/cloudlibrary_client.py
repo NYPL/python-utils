@@ -3,7 +3,7 @@ import hashlib
 import hmac
 import requests
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from nypl_py_utils.functions.log_helper import create_log
 from requests.adapters import HTTPAdapter, Retry
 
@@ -35,28 +35,25 @@ class CloudLibraryClient:
         optional timeframe. Pulls past 24 hours of events by default.
 
         start_date and end_date are optional parameters, and must be
-        formatted either YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS
+        formatted either YYYY-MM-DD, YYYY-MM-DD:SS, or YYYY-MM-DDTHH:MM:SS.fff
         """
-        date_format = "%Y-%m-%dT%H:%M:%S"
-        today = datetime.now(timezone.utc)
-        yesterday = today - timedelta(1)
-        start_date = datetime.strftime(
-            yesterday, date_format) if start_date is None else start_date
-        end_date = datetime.strftime(
-            today, date_format) if end_date is None else end_date
+        path = "data/cloudevents"
+        if None not in (start_date, end_date):
+            if (self._parse_event_date(start_date) >
+                    self._parse_event_date(end_date)):
+                error_message = (f"Start date {start_date} greater than end "
+                                 f"date {end_date}, cannot retrieve library "
+                                 f"events")
+                self.logger.error(error_message)
+                raise CloudLibraryClientError(error_message)
 
-        if (datetime.strptime(start_date, date_format) >
-                datetime.strptime(end_date, date_format)):
-            error_message = (f"Start date {start_date} greater than end date "
-                             f"{end_date}, cannot retrieve library events")
-            self.logger.error(error_message)
-            raise CloudLibraryClientError(error_message)
-
-        self.logger.info(
-            (f"Fetching all library events in "
-             f"time frame {start_date} to {end_date}..."))
-
-        path = f"data/cloudevents?startdate={start_date}&enddate={end_date}"
+            path += f"?startdate={start_date}&enddate={end_date}"
+            self.logger.info(f"Fetching all library events in "
+                             f"time frame {start_date} to {end_date}...")
+        else:
+            self.logger.info("Fetching all library events "
+                             "from the past day...")
+        
         response = self.request(path=path, method_type="GET")
         return response
 
@@ -66,7 +63,7 @@ class CloudLibraryClient:
         Helper function to generate request body when performing item
         and/or patron-specific functions (ex. checking out a title).
         """
-        request_template = "<%(request_type)s><ItemId>%(item_id)s</ItemId><PatronId>%(patron_id)s</PatronId></%(request_type)s>" # noqa
+        request_template = "<%(request_type)s><ItemId>%(item_id)s</ItemId><PatronId>%(patron_id)s</PatronId></%(request_type)s>"  # noqa
         return request_template % {
             "request_type": request_type,
             "item_id": item_id,
@@ -112,6 +109,16 @@ class CloudLibraryClient:
             raise CloudLibraryClientError(error_message)
 
         return response
+
+    def _parse_event_date(self, event_date) -> datetime:
+        for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%S.%f"):
+            try:
+                return datetime.strptime(event_date, fmt)
+            except ValueError:
+                pass
+        error_message = (f"Invalid date format found: {event_date}")
+        self.logger.error(error_message)
+        raise CloudLibraryClientError(error_message)
 
     def _build_headers(self, method_type, path) -> dict:
         time, authorization = self._build_authorization(
