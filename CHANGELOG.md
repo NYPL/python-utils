@@ -1,4 +1,20 @@
 # Changelog
+## v1.6.3 1/27/25
+- Add capability to pull cloudLibrary events by the millisecond
+
+## v1.6.2 12/2/24
+- Add record_num capability to patron_data_helper
+
+## v1.6.1 11/26/24
+- Accidental duplicate of v1.6.0
+
+## v1.6.0 11/20/24
+- Added patron_data_helper functions
+- Use executemany instead of execute when appropriate in PostgreSQLClient
+- Add capability to retry connecting to a database to the MySQL, PostgreSQL, and Redshift clients
+- Automatically close database connection upon error in the MySQL, PostgreSQL, and Redshift clients
+- Delete old PostgreSQLPoolClient, which was not production ready
+
 ## v1.5.0 11/19/24
 - Added cloudLibrary client
 
