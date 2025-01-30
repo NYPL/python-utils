@@ -1,4 +1,7 @@
 # Changelog
+## v1.6.4 1/30/25
+- Update pyproject.toml to reflect CL changes (since omitted in last release)
+
 ## v1.6.3 1/27/25
 - Add capability to pull cloudLibrary events by the millisecond
 
