@@ -100,7 +100,8 @@ This repo uses the [Main-QA-Production](https://github.com/NYPL/engineering-gene
 - Cut a feature branch off of `main`
 - Commit changes to your feature branch
 - File a pull request against `main` and assign a reviewer (who must be an owner)
-  - Include relevant updates to pyproject.toml and README
+  - Include relevant updates to pyproject.toml and README 
+    - If you're planning to cut a release, remember to update **project version** in pyproject.toml!
   - In order for the PR to be accepted, it must pass all unit tests, have no lint issues, and update the CHANGELOG (or contain the `Skip-Changelog` label in GitHub)
 - After the PR is accepted, merge into `main`
 - Merge `main` > `qa`
