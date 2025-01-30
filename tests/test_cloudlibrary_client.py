@@ -41,17 +41,13 @@ class TestCloudLibraryClient:
 
     def test_get_library_events_success_no_args(
             self, test_instance, mocker):
-        start = "2024-11-10T10:00:00"
-        end = "2024-11-11T10:00:00"
         mock_request = mocker.patch(
-            "nypl_py_utils.classes.cloudlibrary_client.CloudLibraryClient.request", # noqa
-            return_value=_TEST_LIBRARY_EVENTS_RESPONSE)
-        response = test_instance.get_library_events()
+            "nypl_py_utils.classes.cloudlibrary_client.CloudLibraryClient.request") # noqa
+        test_instance.get_library_events()
 
         mock_request.assert_called_once_with(
-            path=f"data/cloudevents?startdate={start}&enddate={end}",
+            path="data/cloudevents",
             method_type="GET")
-        assert response == _TEST_LIBRARY_EVENTS_RESPONSE
 
     def test_get_library_events_success_with_start_and_end_date(
             self, test_instance, mocker):
@@ -61,20 +57,6 @@ class TestCloudLibraryClient:
             "nypl_py_utils.classes.cloudlibrary_client.CloudLibraryClient.request", # noqa
             return_value=_TEST_LIBRARY_EVENTS_RESPONSE)
         response = test_instance.get_library_events(start, end)
-
-        mock_request.assert_called_once_with(
-            path=f"data/cloudevents?startdate={start}&enddate={end}",
-            method_type="GET")
-        assert response == _TEST_LIBRARY_EVENTS_RESPONSE
-
-    def test_get_library_events_success_with_no_end_date(
-            self, test_instance, mocker):
-        start = "2024-11-01T09:00:00"
-        end = "2024-11-11T10:00:00"
-        mock_request = mocker.patch(
-            "nypl_py_utils.classes.cloudlibrary_client.CloudLibraryClient.request", # noqa
-            return_value=_TEST_LIBRARY_EVENTS_RESPONSE)
-        response = test_instance.get_library_events(start)
 
         mock_request.assert_called_once_with(
             path=f"data/cloudevents?startdate={start}&enddate={end}",
@@ -103,7 +85,7 @@ class TestCloudLibraryClient:
             url, exc=ConnectTimeout)
 
         with pytest.raises(CloudLibraryClientError):
-            test_instance.get_library_events()
+            test_instance.get_library_events(start, end)
         assert (f"Failed to retrieve response from {url}") in caplog.text
 
     def test_get_request_success(self, test_instance, requests_mock):
