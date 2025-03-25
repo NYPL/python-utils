@@ -50,6 +50,22 @@ class TestPostgreSQLClient:
         test_instance.conn.commit.assert_called_once()
         mock_cursor.close.assert_called_once()
 
+    def test_execute_read_query_with_desc(self, mock_pg_conn, test_instance,
+                                          mocker):
+        test_instance.connect()
+
+        mock_cursor = mocker.MagicMock()
+        mock_cursor.description = [('description', None, None)]
+        mock_cursor.execute.return_value = mock_cursor
+        mock_cursor.fetchall.return_value = [(1, 2, 3), ('a', 'b', 'c')]
+        test_instance.conn.cursor.return_value = mock_cursor
+
+        assert test_instance.execute_query('test query', return_desc=True) == (
+            [(1, 2, 3), ('a', 'b', 'c')], [('description', None, None)])
+        mock_cursor.execute.assert_called_once_with('test query', None)
+        test_instance.conn.commit.assert_called_once()
+        mock_cursor.close.assert_called_once()
+
     def test_execute_write_query(self, mock_pg_conn, test_instance, mocker):
         test_instance.connect()
 

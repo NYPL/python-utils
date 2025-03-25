@@ -55,7 +55,8 @@ class PostgreSQLClient:
                     'Error connecting to {name} database: {error}'.format(
                         name=self.database, error=e)) from None
 
-    def execute_query(self, query, query_params=None, **kwargs):
+    def execute_query(
+            self, query, return_desc=False, query_params=None, **kwargs):
         """
         Executes an arbitrary query against the given database connection.
 
@@ -63,6 +64,9 @@ class PostgreSQLClient:
         ----------
         query: str
             The query to execute
+        return_desc: bool, optional
+            Whether or not to return the cursor description in addition to the
+            results
         query_params: sequence, optional
             The values to be used in a parameterized query. The values can be
             for a single insert query -- e.g. execute_query(
@@ -92,7 +96,8 @@ class PostgreSQLClient:
             else:
                 cursor.execute(query, query_params, **kwargs)
             self.conn.commit()
-            return None if cursor.description is None else cursor.fetchall()
+            results = None if cursor.description is None else cursor.fetchall()
+            return (results, cursor.description) if return_desc else results
         except Exception as e:
             self.conn.rollback()
             cursor.close()
