@@ -1,4 +1,7 @@
 # Changelog
+## v1.6.5 3/24/25
+- Add capability to return PostgreSQL cursor description
+
 ## v1.6.4 1/30/25
 - Update pyproject.toml to reflect CL changes (since omitted in last release)
 
