@@ -58,6 +58,7 @@ FASTAVRO_SCHEMA = {
   }
 }
 
+
 class TestAvroClient:
     @pytest.fixture
     def test_avro_encoder_instance(self, requests_mock):

@@ -83,7 +83,8 @@ class AvroEncoder(AvroClient):
             )
         with BytesIO() as output_stream:
             try:
-                schemaless_writer(output_stream, self.schema, record, strict_allow_default=True)
+                schemaless_writer(output_stream, self.schema, record,
+                                  strict_allow_default=True)
                 return output_stream.getvalue()
             except Exception as e:
                 self.logger.error("Failed to encode record: {}".format(e))
@@ -102,7 +103,8 @@ class AvroEncoder(AvroClient):
                 num_rec=len(record_list), schema=self.schema['name']
             )
         )
-        return [self.encode_record(record, silent=True) for record in record_list]
+        return [self.encode_record(record, silent=True)
+                for record in record_list]
 
 
 class AvroDecoder(AvroClient):
@@ -132,7 +134,6 @@ class AvroDecoder(AvroClient):
                 raise AvroClientError(
                     "Failed to decode record: {}".format(e)) from None
 
-
     def decode_batch(self, record_list):
         """
         Decodes a list of JSON records using the given Avro schema. Input
@@ -145,7 +146,8 @@ class AvroDecoder(AvroClient):
                 num_rec=len(record_list), schema=self.schema['name']
             )
         )
-        return [self.decode_record(record, silent=True) for record in record_list]
+        return [self.decode_record(record, silent=True)
+                for record in record_list]
 
 
 class AvroClientError(Exception):
