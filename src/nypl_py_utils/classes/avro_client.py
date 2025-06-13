@@ -1,8 +1,7 @@
-import avro.schema
+import json
 import requests
 
-from avro.errors import AvroException
-from avro.io import BinaryDecoder, BinaryEncoder, DatumReader, DatumWriter
+from fastavro import schemaless_writer, schemaless_reader, parse_schema
 from io import BytesIO
 from nypl_py_utils.functions.log_helper import create_log
 from requests.adapters import HTTPAdapter, Retry
@@ -23,7 +22,7 @@ class AvroClient:
         self.session = requests.Session()
         self.session.mount("https://",
                            HTTPAdapter(max_retries=retry_policy))
-        self.schema = avro.schema.parse(
+        self.schema = parse_schema(
             self.get_json_schema(platform_schema_url))
 
     def get_json_schema(self, platform_schema_url):
@@ -52,7 +51,7 @@ class AvroClient:
 
         try:
             json_response = response.json()
-            return json_response["data"]["schema"]
+            return json.loads(json_response["data"]["schema"])
         except (JSONDecodeError, KeyError) as e:
             self.logger.error(
                 "Retrieved schema is malformed: {errorType} {errorMessage}"
@@ -70,26 +69,27 @@ class AvroEncoder(AvroClient):
     Platform API endpoint from which to fetch the schema in JSON format.
     """
 
-    def encode_record(self, record):
+    def encode_record(self, record, silent=False):
         """
         Encodes a single JSON record using the given Avro schema.
 
         Returns the encoded record as a byte string.
         """
-        self.logger.debug(
-            "Encoding record using {schema} schema".format(
-                schema=self.schema.name)
-        )
-        datum_writer = DatumWriter(self.schema)
+        if not silent:
+            self.logger.info(
+                "Encoding record using {schema} schema".format(
+                    schema=self.schema['name']
+                )
+            )
         with BytesIO() as output_stream:
-            encoder = BinaryEncoder(output_stream)
             try:
-                datum_writer.write(record, encoder)
+                schemaless_writer(output_stream, self.schema, record, strict_allow_default=True)
                 return output_stream.getvalue()
-            except AvroException as e:
+            except Exception as e:
                 self.logger.error("Failed to encode record: {}".format(e))
                 raise AvroClientError(
-                    "Failed to encode record: {}".format(e)) from None
+                    "Failed to encode record: {}".format(e)
+                ) from None
 
     def encode_batch(self, record_list):
         """
@@ -99,25 +99,10 @@ class AvroEncoder(AvroClient):
         """
         self.logger.info(
             "Encoding ({num_rec}) records using {schema} schema".format(
-                num_rec=len(record_list), schema=self.schema.name
+                num_rec=len(record_list), schema=self.schema['name']
             )
         )
-        encoded_records = []
-        datum_writer = DatumWriter(self.schema)
-        with BytesIO() as output_stream:
-            encoder = BinaryEncoder(output_stream)
-            for record in record_list:
-                try:
-                    datum_writer.write(record, encoder)
-                    encoded_records.append(output_stream.getvalue())
-                    output_stream.seek(0)
-                    output_stream.truncate(0)
-                except AvroException as e:
-                    self.logger.error("Failed to encode record: {}".format(e))
-                    raise AvroClientError(
-                        "Failed to encode record: {}".format(e)
-                    ) from None
-        return encoded_records
+        return [self.encode_record(record, silent=True) for record in record_list]
 
 
 class AvroDecoder(AvroClient):
@@ -126,27 +111,27 @@ class AvroDecoder(AvroClient):
     Platform API endpoint from which to fetch the schema in JSON format.
     """
 
-    def decode_record(self, record):
+    def decode_record(self, record, silent=False):
         """
         Decodes a single record represented using the given Avro
         schema. Input must be a bytes-like object.
 
         Returns a dictionary where each key is a field in the schema.
         """
-        self.logger.debug(
-            "Decoding {rec} using {schema} schema".format(
-                rec=record, schema=self.schema.name
+        if not silent:
+            self.logger.info(
+                "Decoding record using {schema} schema".format(
+                    schema=self.schema['name']
+                )
             )
-        )
-        datum_reader = DatumReader(self.schema)
         with BytesIO(record) as input_stream:
-            decoder = BinaryDecoder(input_stream)
             try:
-                return datum_reader.read(decoder)
+                return schemaless_reader(input_stream, self.schema)
             except Exception as e:
                 self.logger.error("Failed to decode record: {}".format(e))
                 raise AvroClientError(
                     "Failed to decode record: {}".format(e)) from None
+
 
     def decode_batch(self, record_list):
         """
@@ -157,14 +142,10 @@ class AvroDecoder(AvroClient):
         """
         self.logger.info(
             "Decoding ({num_rec}) records using {schema} schema".format(
-                num_rec=len(record_list), schema=self.schema.name
+                num_rec=len(record_list), schema=self.schema['name']
             )
         )
-        decoded_records = []
-        for record in record_list:
-            decoded_record = self.decode_record(record)
-            decoded_records.append(decoded_record)
-        return decoded_records
+        return [self.decode_record(record, silent=True) for record in record_list]
 
 
 class AvroClientError(Exception):

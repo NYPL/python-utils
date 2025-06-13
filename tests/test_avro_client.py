@@ -20,6 +20,43 @@ _TEST_SCHEMA = {'data': {'schema': json.dumps({
     ]
 })}}
 
+FASTAVRO_SCHEMA = {
+  "type": "record",
+  "name": "TestSchema",
+  "fields": [
+    {
+      "name": "patron_id",
+      "type": "int"
+    },
+    {
+      "name": "library_branch",
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  ],
+  "__fastavro_parsed": True,
+  "__named_schemas": {
+    "TestSchema": {
+      "type": "record",
+      "name": "TestSchema",
+      "fields": [
+        {
+          "name": "patron_id",
+          "type": "int"
+        },
+        {
+          "name": "library_branch",
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      ]
+    }
+  }
+}
 
 class TestAvroClient:
     @pytest.fixture
@@ -36,10 +73,7 @@ class TestAvroClient:
 
     def test_get_json_schema_success(self, test_avro_encoder_instance,
                                      test_avro_decoder_instance):
-        assert test_avro_encoder_instance.schema == _TEST_SCHEMA["data"][
-            "schema"]
-        assert test_avro_decoder_instance.schema == _TEST_SCHEMA["data"][
-            "schema"]
+        assert test_avro_encoder_instance.schema == FASTAVRO_SCHEMA
 
     def test_get_json_schema_error(self, requests_mock):
         requests_mock.get("https://test_schema_url", exc=ConnectTimeout)

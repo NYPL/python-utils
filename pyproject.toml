@@ -24,7 +24,7 @@ dependencies = []
 
 [project.optional-dependencies]
 avro-client = [
-    "avro>=1.11.1",
+    "fastavro>=1.11.1",
     "requests>=2.28.1"
 ]
 cloudlibrary-client = [
