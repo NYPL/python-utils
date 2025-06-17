@@ -1,5 +1,5 @@
 # Changelog
-## v1.6.5 6/13/25
+## v1.7.0 6/13/25
 - Use fastavro for avro encoding/decoding
 
 ## v1.6.5 3/24/25
