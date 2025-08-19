@@ -63,6 +63,6 @@ def standard_logger (module):
 
 def create_log(module, json=False):
     if(json):
-        return get_structlog()
+        return get_structlog(module)
     else:
         return standard_logger(module)
