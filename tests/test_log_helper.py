@@ -16,7 +16,7 @@ class TestLogHelper:
     def mock_logger(self, mocker):
         mocker.patch('src.nypl_py_utils.functions.log_helper.structlog.get_logger', return_value=ReturnLogger)
         
-    def test_json_logging(self, mock_logger):
+    def test_json_logging(self):
         logger = create_log('test_log', json=True)
         log = logger.info('testtt', some="json")
         print('capture_logs', log)

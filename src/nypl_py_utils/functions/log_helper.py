@@ -33,13 +33,6 @@ def get_structlog(module):
         logger_factory=structlog.PrintLoggerFactory(),
     )
 
-    # Import this to get an immutable common logger with the above format- you can further use
-    #
-    # custom_logger = common_logger.bind(some_key=some_value)
-    #
-    # to create your own logger with custom fields persisted on top of common ones.
-    #
-    # See https://www.structlog.org/en/stable/bound-loggers.html
     return structlog.get_logger(module)
 
 def standard_logger (module):
