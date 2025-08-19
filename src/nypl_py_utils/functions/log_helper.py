@@ -1,3 +1,5 @@
+import structlog
+
 import logging
 import os
 import sys
@@ -10,8 +12,37 @@ levels = {
     'critical': logging.CRITICAL
 }
 
+# Configure structlog to be machine-readable first and foremost
+# while still making it easy for humans to parse
+# End result (without additional bindings) is JSON like this:
+#
+# { "logger": "module param"
+#   "message": "this is a test log event",
+#  "level": "info",
+#  "timestamp": "2023-11-01 18:50:47"}
+#
+def get_structlog(module):
+    structlog.configure(
+        processors=[
+            structlog.processors.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.EventRenamer("message"),
+            structlog.processors.JSONRenderer(),
+        ],
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(),
+    )
 
-def create_log(module):
+    # Import this to get an immutable common logger with the above format- you can further use
+    #
+    # custom_logger = common_logger.bind(some_key=some_value)
+    #
+    # to create your own logger with custom fields persisted on top of common ones.
+    #
+    # See https://www.structlog.org/en/stable/bound-loggers.html
+    return structlog.get_logger(module)
+
+def standard_logger (module):
     logger = logging.getLogger(module)
     if logger.hasHandlers():
         logger.handlers = []
@@ -28,5 +59,10 @@ def create_log(module):
     console_log.setFormatter(formatter)
 
     logger.addHandler(console_log)
-
     return logger
+
+def create_log(module, json=False):
+    if(json):
+        return get_structlog()
+    else:
+        return standard_logger(module)
