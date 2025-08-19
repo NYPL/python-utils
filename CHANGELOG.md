@@ -1,4 +1,7 @@
 # Changelog
+## v1.8.0 8/19/25
+- Add optional JSON structured logging
+
 ## v1.7.0 6/13/25
 - Use fastavro for avro encoding/decoding
 
