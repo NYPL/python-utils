@@ -3,8 +3,6 @@ import logging
 import os
 import time
 
-import structlog
-from structlog.testing import ReturnLogger
 from freezegun import freeze_time
 
 from nypl_py_utils.functions.log_helper import create_log
