@@ -1,7 +1,7 @@
+import json
 import logging
 import os
 import time
-import pytest
 
 import structlog
 from structlog.testing import ReturnLogger
@@ -12,19 +12,14 @@ from nypl_py_utils.functions.log_helper import create_log
 
 @freeze_time('2023-01-01 19:00:00')
 class TestLogHelper:
-    @pytest.fixture
-    def mock_logger(self, mocker):
-        mocker.patch('src.nypl_py_utils.functions.log_helper.structlog.get_logger', return_value=ReturnLogger)
-        
-    def test_json_logging(self):
+    def test_json_logging(self, capsys):
         logger = create_log('test_log', json=True)
-        log = logger.info('testtt', some="json")
-        print('capture_logs', log)
-        assert False
-            # assert log.get("message") == 'test'
-            # assert log.get("some") == 'json'
-            # assert log.get('level') == 'info'
-            # assert log.get('timestamp') == '2023-01-01 19:00:00Z'
+        logger.info('test', some="json")
+        output = json.loads(capsys.readouterr().out)
+        assert output.get("message") == 'test'
+        assert output.get("some") == 'json'
+        assert output.get('level') == 'info'
+        assert output.get('timestamp') == '2023-01-01T19:00:00Z'
 
     def test_default_logging(self, caplog):
         logger = create_log('test_log')
@@ -35,7 +30,6 @@ class TestLogHelper:
         # freeze_time changes the utc time, while the logger uses local time by
         # default, so force the logger to use utc time
         logger.handlers[0].formatter.converter = time.gmtime
-        print(caplog.records)
         assert len(caplog.records) == 1
         assert logger.handlers[0].format(caplog.records[0]) == \
             '2023-01-01 19:00:00,000 | test_log | INFO: Test info message'

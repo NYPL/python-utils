@@ -12,6 +12,7 @@ levels = {
     'critical': logging.CRITICAL
 }
 
+
 # Configure structlog to be machine-readable first and foremost
 # while still making it easy for humans to parse
 # End result (without additional bindings) is JSON like this:
@@ -35,7 +36,8 @@ def get_structlog(module):
 
     return structlog.get_logger(module)
 
-def standard_logger (module):
+
+def standard_logger(module):
     logger = logging.getLogger(module)
     if logger.hasHandlers():
         logger.handlers = []
@@ -54,8 +56,9 @@ def standard_logger (module):
     logger.addHandler(console_log)
     return logger
 
+
 def create_log(module, json=False):
-    if(json):
+    if (json):
         return get_structlog(module)
     else:
         return standard_logger(module)
