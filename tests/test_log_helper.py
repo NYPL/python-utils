@@ -1,13 +1,23 @@
+import json
 import logging
 import os
 import time
 
 from freezegun import freeze_time
+
 from nypl_py_utils.functions.log_helper import create_log
 
 
 @freeze_time('2023-01-01 19:00:00')
 class TestLogHelper:
+    def test_json_logging(self, capsys):
+        logger = create_log('test_log', json=True)
+        logger.info('test', some="json")
+        output = json.loads(capsys.readouterr().out)
+        assert output.get("message") == 'test'
+        assert output.get("some") == 'json'
+        assert output.get('level') == 'info'
+        assert output.get('timestamp') == '2023-01-01T19:00:00Z'
 
     def test_default_logging(self, caplog):
         logger = create_log('test_log')
