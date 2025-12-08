@@ -2,6 +2,7 @@ import os
 import time
 import json
 import pytest
+from oauthlib.oauth2 import OAuth2Token
 from requests_oauthlib import OAuth2Session
 from requests import HTTPError, JSONDecodeError, Response
 
@@ -110,7 +111,7 @@ class TestOauth2ApiClient:
             .headers['Authorization'] == 'Bearer super-secret-token'
 
         # The token obtained above expires in 1s, so wait out expiration:
-        time.sleep(1.1)
+        time.sleep(2)
 
         # Register new token response:
         second_token_response = dict(_TOKEN_RESPONSE)
@@ -138,7 +139,7 @@ class TestOauth2ApiClient:
             test_instance._do_http_method('GET', 'foo')
 
     def test_token_refresh_failure_raises_error(
-            self, requests_mock, test_instance, token_server_post):
+            self, requests_mock, test_instance, token_server_post, mocker):
         """
         Failure to fetch a token can raise a number of errors including:
          - requests.exceptions.HTTPError for invalid access_token
@@ -150,12 +151,25 @@ class TestOauth2ApiClient:
         a new valid token in response to token expiration. This test asserts
         that the client will not allow more than successive 3 retries.
         """
-        requests_mock.get(f'{BASE_URL}/foo', json={'foo': 'bar'})
+        test_instance._create_oauth_client()
 
+        def set_token(*args, scope):
+            test_instance.oauth_client.token = OAuth2Token(
+                json.loads(args[0]))
+            test_instance.oauth_client._client.populate_token_attributes(
+                json.loads(args[0]))
+
+        requests_mock.get(f'{BASE_URL}/foo', json={'foo': 'bar'})
         token_response = dict(_TOKEN_RESPONSE)
-        token_response['expires_in'] = 0
-        token_server_post = requests_mock\
-            .post(TOKEN_URL, text=json.dumps(token_response))
+        token_response["expires_in"] = 0
+        token_response["expires_at"] = 1000000000
+        token_server_post = requests_mock.post(
+            TOKEN_URL, text=json.dumps(token_response))
+
+        test_instance.oauth_client._client.parse_request_body_response = (
+            mocker.MagicMock(name="method", side_effect=set_token)
+        )
+        test_instance._generate_access_token()
 
         with pytest.raises(Oauth2ApiClientError):
             test_instance._do_http_method('GET', 'foo')
