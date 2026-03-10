@@ -11,7 +11,8 @@ class S3Client:
     """
     Client for fetching and setting an AWS S3 file.
 
-    Takes as input the name of the S3 bucket and resource to be fetched/set.
+    Takes as input the name of the S3 bucket. If fetching/setting a cache, also
+    takes the cached resource.
     """
 
     def __init__(self, bucket, resource=None):
