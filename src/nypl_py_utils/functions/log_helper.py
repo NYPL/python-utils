@@ -1,7 +1,6 @@
-import structlog
-
 import logging
 import os
+import structlog
 import sys
 
 levels = {

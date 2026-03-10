@@ -1,4 +1,7 @@
 # Changelog
+## v1.9.0 3/10/26
+- Add capability to upload arbitrary file type to S3
+
 ## v1.8.0 8/19/25
 - Add optional JSON structured logging
 
