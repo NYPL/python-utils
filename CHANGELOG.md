@@ -1,4 +1,7 @@
 # Changelog
+## v1.9.1 3/11/26
+- Add merge_contextvars to default structlog configuration
+
 ## v1.9.0 3/10/26
 - Add capability to upload arbitrary file type to S3
 
