@@ -28,3 +28,10 @@ class TestS3Client:
         assert arguments[0].getvalue() == json.dumps(_TEST_STATE).encode()
         assert arguments[1] == 'test_s3_bucket'
         assert arguments[2] == 'test_s3_resource'
+
+    def test_upload_file(self, test_instance):
+        test_instance.upload_file('test_content', 'test_filename.txt')
+        arguments = test_instance.s3_client.upload_fileobj.call_args.args
+        assert arguments[0].getvalue() == b'test_content'
+        assert arguments[1] == 'test_s3_bucket'
+        assert arguments[2] == 'test_filename.txt'
