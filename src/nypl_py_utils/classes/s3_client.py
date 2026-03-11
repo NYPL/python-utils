@@ -76,7 +76,7 @@ class S3Client:
             bucket. Example: "subdirectory/example_file.csv"
         """
         self.logger.info(
-            f'Writing {file_path} in S3 bucket {self.s3_client.name}')
+            f'Writing {file_path} in S3 bucket {self.bucket}')
         try:
             input_stream = BytesIO(content.encode())
             self.s3_client.upload_fileobj(input_stream, self.bucket, file_path)
