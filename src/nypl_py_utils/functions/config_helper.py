@@ -82,6 +82,3 @@ class ConfigHelperError(Exception):
         self.message = message
         if message is not None:
             logger.error(message)
-
-    def __str__(self):
-        return self.message
