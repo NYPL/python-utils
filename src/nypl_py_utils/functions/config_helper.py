@@ -78,9 +78,9 @@ def _parse_yaml_dict(yaml_dict, kms_client=None):
 
 
 class ConfigHelperError(Exception):
-    def __init__(self, message='', logger=None):
+    def __init__(self, message=None):
         self.message = message
-        if logger is not None:
+        if message is not None:
             logger.error(message)
 
     def __str__(self):
