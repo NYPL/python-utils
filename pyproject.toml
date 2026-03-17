@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nypl_py_utils"
-version = "1.9.1"
+version = "1.10.0"
 authors = [
   { name="Aaron Friedman", email="aaronfriedman@nypl.org" },
 ]
@@ -69,6 +69,10 @@ secrets-manager-client = [
     "nypl_py_utils[log-helper]",
     "boto3>=1.26.5",
     "botocore>=1.29.5"
+]
+snowflake-client = [
+    "nypl_py_utils[log-helper]",
+    "snowflake-connector-python>=4.3.0"
 ]
 sftp-client = [
     "nypl_py_utils[log-helper]",

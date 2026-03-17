@@ -12,29 +12,36 @@ levels = {
 }
 
 
-# Configure structlog to be machine-readable first and foremost
-# while still making it easy for humans to parse
-# End result (without additional bindings) is JSON like this:
-# {
-#     "logger": "module param",
-#     "message": "this is a test log event",
-#     "level": "info",
-#     "timestamp": "2023-11-01 18:50:47"
-# }
 def get_structlog(module):
-    structlog.configure(
+    """
+    Standard logging without additional bindings looks as follows:
+    {
+        "level": "info",
+        "timestamp": "2026-01-01T12:00:00.613719Z",
+        "logger": "module param",
+        "message": "this is a test log event"
+    }
+
+    Note that: 1) using bind_contextvars will bind variables to *all* loggers
+    that have been created, and 2) you cannot use the same module name for a
+    structlog and for a standard logger
+    """
+    logger = logging.getLogger(module)
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO').upper())
+    logger.propagate = False  # Prevents double logging
+
+    return structlog.wrap_logger(
+        logger,
         processors=[
             structlog.contextvars.merge_contextvars,
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt='iso'),
+            structlog.stdlib.add_logger_name,
             structlog.processors.EventRenamer('message'),
             structlog.processors.JSONRenderer(),
-        ],
-        context_class=dict,
-        logger_factory=structlog.PrintLoggerFactory(),
+        ]
     )
-
-    return structlog.get_logger(module)
 
 
 def standard_logger(module):
@@ -58,7 +65,7 @@ def standard_logger(module):
 
 
 def create_log(module, json=False):
-    if (json):
+    if json:
         return get_structlog(module)
     else:
         return standard_logger(module)

@@ -12,6 +12,7 @@ This package contains common Python utility classes and functions.
 * Connecting to and querying a MySQL database
 * Connecting to and querying a PostgreSQL database
 * Connecting to and querying Redshift
+* Connecting to and querying Snowflake
 * Making requests to the Oauth2 authenticated APIs such as NYPL Platform API and Sierra
 * Interacting with vendor APIs such as cloudLibrary
 
