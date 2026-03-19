@@ -22,9 +22,10 @@ def get_structlog(module):
         "message": "this is a test log event"
     }
 
-    Note that: 1) using bind_contextvars will bind variables to *all* loggers
-    that have been created, and 2) you cannot use the same module name for a
-    structlog and for a standard logger
+    Note that: 1) you should *NOT* use the same module name for a structlog
+    and for a standard logger, and 2) using bind_contextvars will bind
+    variables to *all* loggers. To bind a context variable on one logger
+    without binding it to others, use `logger = logger.bind(contextvar=0)`.
     """
     logger = logging.getLogger(module)
     logger.addHandler(logging.StreamHandler(sys.stdout))
