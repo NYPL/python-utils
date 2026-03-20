@@ -20,7 +20,7 @@ class TestSnowflakeClient:
         with pytest.raises(SnowflakeClientError):
             SnowflakeClient('test_account', 'test_user')
 
-    def test_init_multiple_pw(self):
+    def test_init_multiple_auth(self):
         with pytest.raises(SnowflakeClientError):
             SnowflakeClient('test_account', 'test_user', 'test_pk', 'test_pw')
 
