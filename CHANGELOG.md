@@ -1,4 +1,9 @@
 # Changelog
+## v1.10.0 3/17/26
+- Add Snowflake client
+- Update config helper to allow loading config files without PLAINTEXT/ENCRYPTED structure
+- Update structured log helper to include name of the logger by default
+
 ## v1.9.1 3/11/26
 - Add merge_contextvars to default structlog configuration
 

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nypl_py_utils"
-version = "1.9.1"
+version = "1.10.0"
 authors = [
   { name="Aaron Friedman", email="aaronfriedman@nypl.org" },
 ]
@@ -74,6 +74,10 @@ sftp-client = [
     "nypl_py_utils[log-helper]",
     "paramiko>=3.4.1"
 ]
+snowflake-client = [
+    "nypl_py_utils[log-helper]",
+    "snowflake-connector-python>=4.3.0"
+]
 config-helper = [
     "nypl_py_utils[kms-client,log-helper]",
     "PyYAML>=6.0"
@@ -93,11 +97,11 @@ research-catalog-identifier-helper = [
     "requests>=2.28.1"
 ]
 development = [
-    "nypl_py_utils[avro-client,kinesis-client,kms-client,mysql-client,oauth2-api-client,postgresql-client,redshift-client,s3-client,secrets-manager-client,sftp-client,config-helper,log-helper,obfuscation-helper,patron-data-helper,research-catalog-identifier-helper]",
+    "nypl_py_utils[avro-client,cloudlibrary-client,kinesis-client,kms-client,mysql-client,oauth2-api-client,postgresql-client,redshift-client,s3-client,secrets-manager-client,sftp-client,snowflake-client,config-helper,log-helper,obfuscation-helper,patron-data-helper,research-catalog-identifier-helper]",
     "flake8>=6.0.0",
     "freezegun>=1.2.2",
     "mock>=4.0.3",
-    "pytest==8.0",
+    "pytest>=8.0.0",
     "pytest-mock>=3.10.0",
     "requests-mock>=1.10.0"
 ]
