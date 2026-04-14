@@ -16,7 +16,8 @@ class Oauth2ApiClient:
     """
 
     def __init__(self, client_id=None, client_secret=None, base_url=None,
-                 token_url=None, with_retries=False):
+                 token_url=None, with_retries=False, timeoutInSeconds=None):
+        self.timeoutInSeconds = timeoutInSeconds
         self.client_id = client_id \
             or os.environ.get('NYPL_API_CLIENT_ID', None)
         self.client_secret = client_secret \
@@ -140,6 +141,7 @@ Oauth2 Client using path: {request_path}. Retry #{retries}')
         """
         self.logger.debug(f'Refreshing token via @{self.token_url}')
         self.oauth_client.fetch_token(
+            timeout=self.timeoutInSeconds,
             token_url=self.token_url,
             client_id=self.client_id,
             client_secret=self.client_secret
