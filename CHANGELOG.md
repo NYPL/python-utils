@@ -1,4 +1,7 @@
 # Changelog
+## v1.10.1 4/14/26
+- Add optional timeout param for OAuth2Client
+
 ## v1.10.0 3/17/26
 - Add Snowflake client
 - Update config helper to allow loading config files without PLAINTEXT/ENCRYPTED structure
