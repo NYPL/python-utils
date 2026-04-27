@@ -1,4 +1,7 @@
 # Changelog
+## v1.10.2 4/27/26
+- Prevent double logging in pytest using structlog
+
 ## v1.10.1 4/14/26
 - Add optional timeout param for OAuth2Client
 
