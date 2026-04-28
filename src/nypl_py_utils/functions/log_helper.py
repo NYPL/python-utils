@@ -29,10 +29,11 @@ def get_structlog(module):
     """
     logger = logging.getLogger(module)
     logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO').upper())
-    logger.propagate = False  # Prevents double logging
 
-    # No need to add handlers if there already are some (e.g. pytest)
-    if not logger.handlers:
+    # We assume existing loggers will handle logging to stdout and that we
+    # don't need to do anything. Otherwise, manually add a stdout handler.
+    if not logger.hasHandlers():
+        logger.propagate = False
         logger.addHandler(logging.StreamHandler(sys.stdout))
 
     return structlog.wrap_logger(
