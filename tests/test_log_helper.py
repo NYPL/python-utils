@@ -10,10 +10,10 @@ from nypl_py_utils.functions.log_helper import create_log
 
 @freeze_time('2023-01-01 19:00:00')
 class TestLogHelper:
-    def test_json_logging(self, capsys):
+    def test_json_logging(self, caplog):
         logger = create_log('test_structlog', json=True)
         logger.info('test', some="json")
-        output = json.loads(capsys.readouterr().out)
+        output = json.loads(caplog.records[0].msg)
         assert output.get("message") == 'test'
         assert output.get("some") == 'json'
         assert output.get('level') == 'info'
