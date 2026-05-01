@@ -6,67 +6,34 @@ from nypl_py_utils.functions.log_helper import create_log
 class SnowflakeClient:
     """Client for managing connections to Snowflake"""
 
-    def __init__(self, account, user, private_key=None, password=None):
-        self.logger = create_log('snowflake_client')
-        if (password is None) == (private_key is None):
-            raise SnowflakeClientError(
-                'Either password or private key must be set (but not both)',
-                self.logger
-            ) from None
-
-        self.conn = None
-        self.account = account
-        self.user = user
-        self.private_key = private_key
-        self.password = password
-
-    def connect(self, mfa_code=None, **kwargs):
+    def __init__(self, connection_params):
         """
-        Connects to Snowflake using the given credentials. If you're connecting
-        locally, you should be using the password and mfa_code. If the
-        connection is for production code, a private_key should be set up.
+        See the `connect` method below for what `connection_params` should
+        look like
+        """
+        self.logger = create_log('snowflake_client')
+        self.connection_params = connection_params
+        self.conn = None
 
-        Parameters
-        ----------
-        mfa_code: str, optional
-            The six-digit MFA code. Only necessary for connecting as a human
-            user.
-        kwargs:
-            All possible arguments (such as which warehouse to use or how
-            long to wait before timing out) can be found here:
-            https://docs.snowflake.com/en/developer-guide/python-connector/python-connector-api#connect
+    def connect(self):
+        """
+        Connects to Snowflake using the given connection parameters. In practice, there
+        are likely two sets of parameters that will be used:
+            1. Local development: `connection_name` and `private_key_file_pwd`. This
+            method requires a `connections.toml` file with a matching `connection_name`
+            connection.
+            2. Production code: `account`, `user`, and `private_key`
+
+        All possible parameters can be found here:
+        https://docs.snowflake.com/en/developer-guide/python-connector/python-connector-api#connect
         """
         self.logger.info('Connecting to Snowflake')
-        if self.private_key is not None:
-            try:
-                self.conn = sc.connect(
-                    account=self.account,
-                    user=self.user,
-                    private_key=self.private_key,
-                    **kwargs)
-            except Exception as e:
-                raise SnowflakeClientError(
-                    f'Error connecting to Snowflake: {e}', self.logger
-                ) from None
-        else:
-            if mfa_code is None:
-                raise SnowflakeClientError(
-                    'When using a password, an MFA code must also be provided',
-                    self.logger
-                ) from None
-
-            pw = self.password + mfa_code
-            try:
-                self.conn = sc.connect(
-                    account=self.account,
-                    user=self.user,
-                    password=pw,
-                    passcode_in_password=True,
-                    **kwargs)
-            except Exception as e:
-                raise SnowflakeClientError(
-                    f'Error connecting to Snowflake: {e}', self.logger
-                ) from None
+        try:
+            self.conn = sc.connect(**self.connection_params)
+        except Exception as e:
+            raise SnowflakeClientError(
+                f'Error connecting to Snowflake: {e}', self.logger
+            ) from None
 
     def execute_query(self, query, **kwargs):
         """

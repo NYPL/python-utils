@@ -1,4 +1,7 @@
 # Changelog
+## v1.10.3 4/27/26
+- Allow Snowflake client to connect using any parameters
+
 ## v1.10.2 4/27/26
 - Prevent double logging in pytest using structlog
 
