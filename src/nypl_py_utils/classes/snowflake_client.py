@@ -17,12 +17,12 @@ class SnowflakeClient:
 
     def connect(self):
         """
-        Connects to Snowflake using the given connection parameters. In practice, there
-        are likely two sets of parameters that will be used:
-            1. Local development: `connection_name` and `private_key_file_pwd`. This
-            method requires a `connections.toml` file with a matching `connection_name`
-            connection.
-            2. Production code: `account`, `user`, and `private_key`
+        Connects to Snowflake using the given connection parameters. In
+        practice, there are likely two sets of parameters that will be used:
+            1. Local development: `connection_name` and `private_key_file_pwd`.
+            This method requires a `connections.toml` file with a matching
+            `connection_name` connection.
+            2. Production code: `account`, `user`, and `private_key`.
 
         All possible parameters can be found here:
         https://docs.snowflake.com/en/developer-guide/python-connector/python-connector-api#connect
