@@ -14,38 +14,13 @@ class TestSnowflakeClient:
     @pytest.fixture
     def test_instance(self):
         return SnowflakeClient(
-            'test_account', 'test_user', private_key='test_pk')
+            {'account': 'test_account', 'user': 'test_user'}
+        )
 
-    def test_init_no_pw(self):
-        with pytest.raises(SnowflakeClientError):
-            SnowflakeClient('test_account', 'test_user')
-
-    def test_init_multiple_auth(self):
-        with pytest.raises(SnowflakeClientError):
-            SnowflakeClient('test_account', 'test_user', 'test_pk', 'test_pw')
-
-    def test_connect_with_pk(self, mock_snowflake_conn, test_instance):
+    def test_connect(self, mock_snowflake_conn, test_instance):
         test_instance.connect()
         mock_snowflake_conn.assert_called_once_with(
-            account='test_account',
-            user='test_user',
-            private_key='test_pk')
-
-    def test_connect_with_pw(self, mock_snowflake_conn):
-        test_instance = SnowflakeClient(
-            'test_account', 'test_user', password='test_pw')
-        test_instance.connect('123456')
-        mock_snowflake_conn.assert_called_once_with(
-            account='test_account',
-            user='test_user',
-            password='test_pw123456',
-            passcode_in_password=True)
-
-    def test_connect_no_mfa(self, mock_snowflake_conn):
-        test_instance = SnowflakeClient(
-            'test_account', 'test_user', password='test_pw')
-        with pytest.raises(SnowflakeClientError):
-            test_instance.connect()
+            account='test_account', user='test_user')
 
     def test_execute_query(
             self, mock_snowflake_conn, test_instance, mocker):
