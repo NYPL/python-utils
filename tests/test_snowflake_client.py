@@ -50,7 +50,8 @@ class TestSnowflakeClient:
         mock_cursor.close.assert_called()
         test_conn.close.assert_called_once()
 
-    def test_close_connection(self, mock_snowflake_conn, test_instance, mocker):
+    def test_close_connection(
+            self, mock_snowflake_conn, test_instance, mocker):
         assert test_instance.conn is None
 
         test_instance.connect()
