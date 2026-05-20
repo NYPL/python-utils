@@ -53,7 +53,7 @@ oauth2-api-client = [
 ]
 postgresql-client = [
     "nypl_py_utils[log-helper]",
-    "psycopg[binary]==3.3.3"
+    "psycopg[binary]==3.3.4"
 ]
 redshift-client = [
     "nypl_py_utils[log-helper]",
