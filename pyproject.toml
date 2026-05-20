@@ -72,7 +72,7 @@ secrets-manager-client = [
 ]
 sftp-client = [
     "nypl_py_utils[log-helper]",
-    "paramiko==4.0.0"
+    "paramiko==5.0.0"
 ]
 snowflake-client = [
     "nypl_py_utils[log-helper]",
