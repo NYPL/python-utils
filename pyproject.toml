@@ -76,7 +76,7 @@ sftp-client = [
 ]
 snowflake-client = [
     "nypl_py_utils[log-helper]",
-    "snowflake-connector-python==4.3.0"
+    "snowflake-connector-python==4.5.0"
 ]
 config-helper = [
     "nypl_py_utils[kms-client,log-helper]",
