@@ -58,7 +58,7 @@ class S3Client:
         except ClientError as e:
             error_msg = (
                 f'Error uploading {self.resource} to S3 bucket '
-                f'{self.s3_bucket}: {e}')
+                f'{self.bucket}: {e}')
             self.logger.error(error_msg)
             raise S3ClientError(error_msg) from None
 
@@ -83,7 +83,7 @@ class S3Client:
         except ClientError as e:
             error_msg = (
                 f'Error uploading {file_path} to S3 bucket '
-                f'{self.s3_bucket}: {e}')
+                f'{self.bucket}: {e}')
             self.logger.error(error_msg)
             raise S3ClientError(error_msg) from None
 
