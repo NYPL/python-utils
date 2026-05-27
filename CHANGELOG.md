@@ -1,4 +1,7 @@
 # Changelog
+## v1.11.1 5/20/26
+- Reset Snowflake connection to None when it's closed
+
 ## v1.11.0 4/27/26
 - Allow Snowflake client to connect using any parameters
 

@@ -87,6 +87,7 @@ class SnowflakeClient:
         """Closes the connection"""
         self.logger.info('Closing Snowflake connection')
         self.conn.close()
+        self.conn = None
 
 
 class SnowflakeClientError(Exception):

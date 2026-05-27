@@ -38,18 +38,28 @@ class TestSnowflakeClient:
     def test_execute_query_with_exception(
             self, mock_snowflake_conn, test_instance, mocker):
         test_instance.connect()
+        test_conn = test_instance.conn
 
         mock_cursor = mocker.MagicMock()
         mock_cursor.execute.side_effect = Exception()
-        test_instance.conn.cursor.return_value = mock_cursor
+        test_conn.cursor.return_value = mock_cursor
 
         with pytest.raises(SnowflakeClientError):
             test_instance.execute_query('test query')
 
         mock_cursor.close.assert_called()
-        test_instance.conn.close.assert_called_once()
+        test_conn.close.assert_called_once()
 
-    def test_close_connection(self, mock_snowflake_conn, test_instance):
+    def test_close_connection(
+            self, mock_snowflake_conn, test_instance, mocker):
+        assert test_instance.conn is None
+
         test_instance.connect()
+
+        test_conn = test_instance.conn
+        assert test_conn is not None
+
         test_instance.close_connection()
-        test_instance.conn.close.assert_called_once()
+
+        test_conn.close.assert_called_once()
+        assert test_instance.conn is None

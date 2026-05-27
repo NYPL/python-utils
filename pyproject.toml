@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nypl_py_utils"
-version = "1.11.0"
+version = "1.11.1"
 authors = [
   { name="Aaron Friedman", email="aaronfriedman@nypl.org" },
 ]
@@ -26,21 +26,21 @@ dependencies = []
 avro-client = [
     "nypl_py_utils[log-helper]",
     "fastavro==1.12.2",
-    "requests==2.33.1"
+    "requests==2.34.0"
 ]
 cloudlibrary-client = [
     "nypl_py_utils[log-helper]",
-    "requests==2.33.1"
+    "requests==2.34.0"
 ]
 kinesis-client = [
     "nypl_py_utils[log-helper]",
     "boto3==1.43.1",
-    "botocore==1.43.1"
+    "botocore==1.43.6"
 ]
 kms-client = [
     "nypl_py_utils[log-helper]",
     "boto3==1.43.1",
-    "botocore==1.43.1"
+    "botocore==1.43.6"
 ]
 mysql-client = [
     "nypl_py_utils[log-helper]",
@@ -53,22 +53,22 @@ oauth2-api-client = [
 ]
 postgresql-client = [
     "nypl_py_utils[log-helper]",
-    "psycopg[binary]==3.3.3"
+    "psycopg[binary]==3.3.4"
 ]
 redshift-client = [
     "nypl_py_utils[log-helper]",
-    "botocore==1.43.1",
+    "botocore==1.43.6",
     "redshift-connector==2.1.13"
 ]
 s3-client = [
     "nypl_py_utils[log-helper]",
     "boto3==1.43.1",
-    "botocore==1.43.1"
+    "botocore==1.43.6"
 ]
 secrets-manager-client = [
     "nypl_py_utils[log-helper]",
     "boto3==1.43.1",
-    "botocore==1.43.1"
+    "botocore==1.43.6"
 ]
 sftp-client = [
     "nypl_py_utils[log-helper]",
@@ -76,7 +76,7 @@ sftp-client = [
 ]
 snowflake-client = [
     "nypl_py_utils[log-helper]",
-    "snowflake-connector-python==4.3.0"
+    "snowflake-connector-python==4.5.0"
 ]
 config-helper = [
     "nypl_py_utils[kms-client,log-helper]",
@@ -94,7 +94,7 @@ patron-data-helper = [
     "pandas==3.0.2"
 ]
 research-catalog-identifier-helper = [
-    "requests==2.33.1"
+    "requests==2.34.0"
 ]
 development = [
     "nypl_py_utils[avro-client,cloudlibrary-client,kinesis-client,kms-client,mysql-client,oauth2-api-client,postgresql-client,redshift-client,s3-client,secrets-manager-client,sftp-client,snowflake-client,config-helper,log-helper,obfuscation-helper,patron-data-helper,research-catalog-identifier-helper]",
