@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nypl_py_utils"
-version = "1.11.1"
+version = "1.12.0"
 authors = [
   { name="Aaron Friedman", email="aaronfriedman@nypl.org" },
 ]
@@ -23,6 +23,11 @@ dependencies = []
 "Bug Tracker" = "https://github.com/NYPL/python-utils/issues"
 
 [project.optional-dependencies]
+azure-client = [
+    "nypl_py_utils[log-helper]",
+    "mssql-python==1.9.0",
+    "pandas==3.0.3"
+]
 avro-client = [
     "nypl_py_utils[log-helper]",
     "fastavro==1.12.2",
@@ -91,13 +96,13 @@ obfuscation-helper = [
 ]
 patron-data-helper = [
     "nypl_py_utils[postgresql-client,redshift-client,log-helper]",
-    "pandas==3.0.2"
+    "pandas==3.0.3"
 ]
 research-catalog-identifier-helper = [
     "requests==2.34.0"
 ]
 development = [
-    "nypl_py_utils[avro-client,cloudlibrary-client,kinesis-client,kms-client,mysql-client,oauth2-api-client,postgresql-client,redshift-client,s3-client,secrets-manager-client,sftp-client,snowflake-client,config-helper,log-helper,obfuscation-helper,patron-data-helper,research-catalog-identifier-helper]",
+    "nypl_py_utils[avro-client,azure-client,cloudlibrary-client,kinesis-client,kms-client,mysql-client,oauth2-api-client,postgresql-client,redshift-client,s3-client,secrets-manager-client,sftp-client,snowflake-client,config-helper,log-helper,obfuscation-helper,patron-data-helper,research-catalog-identifier-helper]",
     "flake8==7.3.0",
     "freezegun==1.5.5",
     "mock==5.2.0",
