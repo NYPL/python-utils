@@ -1,4 +1,7 @@
 # Changelog
+## v1.12.0 6/15/26
+- Add Azure client
+
 ## v1.11.1 5/20/26
 - Reset Snowflake connection to None when it's closed
 
