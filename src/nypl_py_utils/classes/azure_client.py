@@ -54,7 +54,8 @@ class AzureClient:
                         sqltype=mssql_python.SQL_WCHAR, encoding="utf-8"
                     )
                     return
-                except (mssql_python.InterfaceError, mssql_python.OperationalError):
+                except (mssql_python.InterfaceError,
+                        mssql_python.OperationalError):
                     if attempt_count < retry_count:
                         self.logger.info("Failed to connect — retrying")
                         time.sleep(backoff_factor**attempt_count)
@@ -100,7 +101,8 @@ class AzureClient:
                     cursor.execute(query)
                 if dataframe:
                     columns = [col[0] for col in cursor.description]
-                    return pd.DataFrame.from_records(cursor.fetchall(), columns=columns)
+                    return pd.DataFrame.from_records(
+                        cursor.fetchall(), columns=columns)
                 return cursor.fetchall()
             finally:
                 cursor.close()
