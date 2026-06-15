@@ -166,14 +166,12 @@ class TestAzureClient:
     def test_execute_query_fail_with_rollback_error(
         self, mock_azure_conn, test_instance, mocker, caplog
     ):
-        # A rollback failure should not leak the connection or mask the
-        # original query error
         test_instance.connect()
         mock_conn = test_instance.conn
         mock_cursor = mocker.MagicMock()
         mock_cursor.execute.side_effect = Exception("bad query")
         mock_conn.cursor.return_value = mock_cursor
-        mock_conn.rollback.side_effect = Exception("rollback boom")
+        mock_conn.rollback.side_effect = Exception("rollback issue")
 
         with pytest.raises(AzureClientError):
             test_instance.execute_query("SELECT bad")
