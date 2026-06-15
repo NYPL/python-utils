@@ -39,7 +39,7 @@ class TestAzureClient:
         )
 
     def test_connect_retry_success(
-        self, mock_azure_conn, test_instance, mocker
+        self, mock_azure_conn, test_instance, mocker, caplog
     ):
         mock_sleep = mocker.patch(
             "nypl_py_utils.classes.azure_client.time.sleep")
@@ -48,12 +48,13 @@ class TestAzureClient:
             mssql_python.OperationalError("busy", "ddbc busy"),
             success_conn,
         ]
-
-        test_instance.connect(retry_count=2, backoff_factor=2)
+        with caplog.at_level("ERROR"):
+            test_instance.connect(retry_count=2, backoff_factor=2)
 
         assert test_instance.conn == success_conn
         assert mock_azure_conn.call_count == 2
         mock_sleep.assert_called_once_with(2**0)
+        assert caplog.text == ""
 
     def test_connect_retry_fail(
         self, mock_azure_conn, test_instance, mocker, caplog
@@ -158,6 +159,28 @@ class TestAzureClient:
         mock_conn.close.assert_called_once()
         assert test_instance.conn is None
         mock_cursor.close.assert_called_once()
+        assert (
+            "Error executing test_database query 'SELECT bad'" in caplog.text
+        )
+
+    def test_execute_query_fail_with_rollback_error(
+        self, mock_azure_conn, test_instance, mocker, caplog
+    ):
+        # A rollback failure should not leak the connection or mask the
+        # original query error
+        test_instance.connect()
+        mock_conn = test_instance.conn
+        mock_cursor = mocker.MagicMock()
+        mock_cursor.execute.side_effect = Exception("bad query")
+        mock_conn.cursor.return_value = mock_cursor
+        mock_conn.rollback.side_effect = Exception("rollback boom")
+
+        with pytest.raises(AzureClientError):
+            test_instance.execute_query("SELECT bad")
+
+        mock_conn.close.assert_called_once()
+        assert test_instance.conn is None
+        assert "Error rolling back open transaction" in caplog.text
         assert (
             "Error executing test_database query 'SELECT bad'" in caplog.text
         )

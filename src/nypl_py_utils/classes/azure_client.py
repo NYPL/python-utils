@@ -2,6 +2,7 @@ import mssql_python
 import pandas as pd
 import time
 
+from contextlib import closing
 from nypl_py_utils.functions.log_helper import create_log
 
 
@@ -92,9 +93,9 @@ class AzureClient:
             self.logger.error(msg)
             raise AzureClientError(msg)
 
-        cursor = self.conn.cursor()
         try:
-            try:
+            # Automatically closes cursor when done, even if there's an error
+            with closing(self.conn.cursor()) as cursor:
                 if params is not None:
                     cursor.execute(query, params)
                 else:
@@ -104,20 +105,20 @@ class AzureClient:
                     return pd.DataFrame.from_records(
                         cursor.fetchall(), columns=columns)
                 return cursor.fetchall()
-            finally:
-                cursor.close()
         except Exception as e:
-            if self.conn:
-                self.conn.rollback()
             self.close_connection()
-
             msg = f"Error executing {self.database} query '{query}': {e}"
             self.logger.error(msg)
             raise AzureClientError(msg) from e
 
     def close_connection(self):
-        """Closes the database connection"""
+        """Rolls back any open transaction and closes the connection"""
         if self.conn:
+            # A rollback failure is logged but doesn't prevent the close
+            try:
+                self.conn.rollback()
+            except Exception:
+                self.logger.error("Error rolling back open transaction")
             self.conn.close()
             self.conn = None
             self.logger.info(f"Connection to {self.database} closed.")
