@@ -1,4 +1,7 @@
 # Changelog
+## v1.12.1 6/18/26
+- Remove Azure client encoding and decoding
+
 ## v1.12.0 6/15/26
 - Add Azure client
 

@@ -50,10 +50,6 @@ class AzureClient:
                         connection_str=connection_string,
                         timeout=30,
                     )
-                    self.conn.setencoding(encoding="utf-8")
-                    self.conn.setdecoding(
-                        sqltype=mssql_python.SQL_WCHAR, encoding="utf-8"
-                    )
                     return
                 except (mssql_python.InterfaceError,
                         mssql_python.OperationalError):
