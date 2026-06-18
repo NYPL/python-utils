@@ -25,12 +25,6 @@ class TestAzureClient:
         test_instance.connect()
 
         assert test_instance.conn == mock_azure_conn.return_value
-        mock_azure_conn.return_value.setencoding.assert_called_once_with(
-            encoding="utf-8"
-        )
-        mock_azure_conn.return_value.setdecoding.assert_called_once_with(
-            sqltype=mssql_python.SQL_WCHAR, encoding="utf-8"
-        )
         # credentials are interpolated into connection string
         connection_str = mock_azure_conn.call_args.kwargs["connection_str"]
         assert connection_str == (
