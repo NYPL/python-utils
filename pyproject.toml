@@ -63,7 +63,7 @@ postgresql-client = [
 redshift-client = [
     "nypl_py_utils[log-helper]",
     "botocore==1.43.6",
-    "redshift-connector==2.1.13"
+    "redshift-connector==2.1.14"
 ]
 s3-client = [
     "nypl_py_utils[log-helper]",
