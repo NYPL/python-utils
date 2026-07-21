@@ -40,12 +40,12 @@ cloudlibrary-client = [
 kinesis-client = [
     "nypl_py_utils[log-helper]",
     "boto3==1.43.1",
-    "botocore==1.43.6"
+    "botocore==1.43.15"
 ]
 kms-client = [
     "nypl_py_utils[log-helper]",
     "boto3==1.43.1",
-    "botocore==1.43.6"
+    "botocore==1.43.15"
 ]
 mysql-client = [
     "nypl_py_utils[log-helper]",
@@ -62,18 +62,18 @@ postgresql-client = [
 ]
 redshift-client = [
     "nypl_py_utils[log-helper]",
-    "botocore==1.43.6",
+    "botocore==1.43.15",
     "redshift-connector==2.1.13"
 ]
 s3-client = [
     "nypl_py_utils[log-helper]",
     "boto3==1.43.1",
-    "botocore==1.43.6"
+    "botocore==1.43.15"
 ]
 secrets-manager-client = [
     "nypl_py_utils[log-helper]",
     "boto3==1.43.1",
-    "botocore==1.43.6"
+    "botocore==1.43.15"
 ]
 sftp-client = [
     "nypl_py_utils[log-helper]",
