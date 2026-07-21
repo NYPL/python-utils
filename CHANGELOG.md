@@ -1,4 +1,7 @@
 # Changelog
+## v1.12.2 7/21/26
+- Enable S3 client to upload files in binary format if needed
+
 ## v1.12.1 6/18/26
 - Remove Azure client encoding and decoding
 
