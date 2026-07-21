@@ -65,29 +65,25 @@ class S3Client:
             self.logger.error(error_msg)
             raise S3ClientError(error_msg) from None
 
-    def upload_file(self, content, file_path, encode=True):
+    def upload_file(self, content, file_path):
         """
         Writes an arbitrary file to S3. Note that this will overwrite any
         existing file with the same name.
 
         Parameters
         ----------
-        content: str
-            The string that should be written to the file. Must be utf-8.
+        content: str | bytes
+            The data that should be written to the file
         file_path: str
             The full path of the file that should be written not including the
             bucket. Example: "subdirectory/example_file.csv"
-        encode: bool, optional
-            Whether to encode the content as utf-8 before writing. Default is
-            True. If False, the content should be provided in bytes (e.g.
-            in parquet, PDF, or image form)
         """
         self.logger.info(f"Writing {file_path} in S3 bucket {self.bucket}")
         try:
-            if encode:
+            if isinstance(content, str):
                 content = content.encode("utf-8")
-            input_stream = BytesIO(content)
-            self.s3_client.upload_fileobj(input_stream, self.bucket, file_path)
+            self.s3_client.upload_fileobj(
+                BytesIO(content), self.bucket, file_path)
         except ClientError as e:
             error_msg = (
                 f"Error uploading {file_path} to S3 bucket "

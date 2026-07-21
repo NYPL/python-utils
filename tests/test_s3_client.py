@@ -29,9 +29,22 @@ class TestS3Client:
         assert arguments[1] == "test_s3_bucket"
         assert arguments[2] == "test_s3_resource"
 
-    def test_upload_file(self, test_instance):
+    def test_upload_file_encoded(self, test_instance, mocker):
         test_instance.upload_file("test_content", "test_filename.txt")
         arguments = test_instance.s3_client.upload_fileobj.call_args.args
-        assert arguments[0].getvalue() == b"test_content"
+        expected_content = "test_content".encode("utf-8")
+
+        # check that the content is encoded as utf-8 before being sent to S3
+        assert arguments[0].getvalue() == expected_content
         assert arguments[1] == "test_s3_bucket"
         assert arguments[2] == "test_filename.txt"
+
+    def test_upload_file_binary(self, test_instance):
+        binary_content = b"PAR1\x00\x01\xff\xfe"
+        test_instance.upload_file(binary_content, "test_filename.parquet")
+        arguments = test_instance.s3_client.upload_fileobj.call_args.args
+
+        # check bytes aren't re-encoded; they should reach S3 as-is
+        assert arguments[0].getvalue() == binary_content
+        assert arguments[1] == "test_s3_bucket"
+        assert arguments[2] == "test_filename.parquet"
