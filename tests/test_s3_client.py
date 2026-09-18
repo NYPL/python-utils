@@ -48,3 +48,14 @@ class TestS3Client:
         assert arguments[0].getvalue() == binary_content
         assert arguments[1] == "test_s3_bucket"
         assert arguments[2] == "test_filename.parquet"
+
+    def test_read_file(self, test_instance):
+        def mock_download(bucket, resource, stream):
+            assert bucket == "test_s3_bucket"
+            assert resource == "test_filename.txt"
+            stream.write("test_content".encode())
+
+        test_instance.s3_client.download_fileobj.side_effect = mock_download
+        assert test_instance.read_file(
+            "test_filename.txt"
+        ).getvalue().decode() == "test_content"
