@@ -116,6 +116,7 @@ class S3Client:
             self.logger.error(error_msg)
             raise S3ClientError(error_msg) from None
 
+
 class S3ClientError(Exception):
     def __init__(self, message=None):
         self.message = message
