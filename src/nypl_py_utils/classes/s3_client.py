@@ -92,6 +92,30 @@ class S3Client:
             self.logger.error(error_msg)
             raise S3ClientError(error_msg) from None
 
+    def read_file(self, file_path):
+        """
+        Reads an arbitrary file from S3 as a BytesIO stream.
+
+        Parameters
+        ----------
+        file_path: str
+            The full path of the file that should be downloaded not including
+            the bucket. Example: "subdirectory/example_file.csv"
+        """
+        self.logger.info(f"Reading {file_path} in S3 bucket {self.bucket}")
+        try:
+            output_stream = BytesIO()
+            self.s3_client.download_fileobj(
+                self.bucket, file_path, output_stream
+            )
+            return output_stream
+        except ClientError as e:
+            error_msg = (
+                f"Error reading {file_path} in S3 bucket {self.bucket}: {e}"
+            )
+            self.logger.error(error_msg)
+            raise S3ClientError(error_msg) from None
+
 
 class S3ClientError(Exception):
     def __init__(self, message=None):

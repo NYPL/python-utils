@@ -1,4 +1,8 @@
 # Changelog
+## v1.12.3 9/18/26
+- Enable S3 client to download arbitrary files as BytesIO streams
+- Enable SFTP client to list available files
+
 ## v1.12.2 7/21/26
 - Enable S3 client to upload files in binary format if needed
 

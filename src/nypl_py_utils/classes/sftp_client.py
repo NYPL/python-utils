@@ -60,6 +60,17 @@ class SftpClient:
             raise SftpClientError(
                 "Error downloading file: {}".format(e)) from None
 
+    def list_files(self, remote_path=None):
+        """Lists all files and directories in a remote directory"""
+        self.logger.info(f"Listing files in {remote_path}")
+        try:
+            return self.sftp_conn.listdir(remote_path)
+        except Exception as e:
+            self.logger.error("Error listing files: {}".format(e))
+            self.close_connection()
+            raise SftpClientError(
+                "Error listing files: {}".format(e)) from None
+
     def close_connection(self):
         """Closes the connection"""
         self.logger.debug("Closing connection to {}".format(self.host))

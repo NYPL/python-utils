@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nypl_py_utils"
-version = "1.12.2"
+version = "1.12.3"
 authors = [
   { name="Aaron Friedman", email="aaronfriedman@nypl.org" },
 ]
@@ -26,30 +26,30 @@ dependencies = []
 avro-client = [
     "nypl_py_utils[log-helper]",
     "fastavro==1.12.2",
-    "requests==2.34.0"
+    "requests==2.34.2"
 ]
 azure-client = [
     "nypl_py_utils[log-helper]",
-    "mssql-python==1.9.0",
-    "pandas==3.0.3"
+    "mssql-python==1.15.0",
+    "pandas==3.0.6"
 ]
 cloudlibrary-client = [
     "nypl_py_utils[log-helper]",
-    "requests==2.34.0"
+    "requests==2.34.2"
 ]
 kinesis-client = [
     "nypl_py_utils[log-helper]",
-    "boto3==1.43.1",
-    "botocore==1.43.6"
+    "boto3==1.43.97",
+    "botocore==1.43.97"
 ]
 kms-client = [
     "nypl_py_utils[log-helper]",
-    "boto3==1.43.1",
-    "botocore==1.43.6"
+    "boto3==1.43.97",
+    "botocore==1.43.97"
 ]
 mysql-client = [
     "nypl_py_utils[log-helper]",
-    "mysql-connector-python==9.7.0"
+    "mysql-connector-python==26.7.0"
 ]
 oauth2-api-client = [
     "nypl_py_utils[log-helper]",
@@ -58,37 +58,37 @@ oauth2-api-client = [
 ]
 postgresql-client = [
     "nypl_py_utils[log-helper]",
-    "psycopg[binary]==3.3.4"
+    "psycopg[binary]==3.3.6"
 ]
 redshift-client = [
     "nypl_py_utils[log-helper]",
-    "botocore==1.43.6",
-    "redshift-connector==2.1.13"
+    "botocore==1.43.97",
+    "redshift-connector==2.1.16"
 ]
 s3-client = [
     "nypl_py_utils[log-helper]",
-    "boto3==1.43.1",
-    "botocore==1.43.6"
+    "boto3==1.43.97",
+    "botocore==1.43.97"
 ]
 secrets-manager-client = [
     "nypl_py_utils[log-helper]",
-    "boto3==1.43.1",
-    "botocore==1.43.6"
+    "boto3==1.43.97",
+    "botocore==1.43.97"
 ]
 sftp-client = [
     "nypl_py_utils[log-helper]",
-    "paramiko==4.0.0"
+    "paramiko==5.0.0"
 ]
 snowflake-client = [
     "nypl_py_utils[log-helper]",
-    "snowflake-connector-python==4.5.0"
+    "snowflake-connector-python==4.7.4"
 ]
 config-helper = [
     "nypl_py_utils[kms-client,log-helper]",
     "PyYAML==6.0.3"
 ]
 log-helper = [
-    "structlog==25.5.0"
+    "structlog==26.1.0"
 ]
 obfuscation-helper = [
     "nypl_py_utils[log-helper]",
@@ -96,17 +96,17 @@ obfuscation-helper = [
 ]
 patron-data-helper = [
     "nypl_py_utils[postgresql-client,redshift-client,log-helper]",
-    "pandas==3.0.3"
+    "pandas==3.0.6"
 ]
 research-catalog-identifier-helper = [
-    "requests==2.34.0"
+    "requests==2.34.2"
 ]
 development = [
     "nypl_py_utils[avro-client,azure-client,cloudlibrary-client,kinesis-client,kms-client,mysql-client,oauth2-api-client,postgresql-client,redshift-client,s3-client,secrets-manager-client,sftp-client,snowflake-client,config-helper,log-helper,obfuscation-helper,patron-data-helper,research-catalog-identifier-helper]",
     "flake8==7.3.0",
     "freezegun==1.5.5",
     "mock==5.2.0",
-    "pytest==9.0.3",
+    "pytest==9.1.1",
     "pytest-mock==3.15.1",
     "requests-mock==1.12.1"
 ]

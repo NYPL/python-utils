@@ -89,6 +89,26 @@ class TestSftpClient:
         test_instance.sftp_conn.close.assert_called_once()
         test_instance.ssh_client.close.assert_called_once()
 
+    def test_list_files(self, test_instance, mocker):
+        test_instance.sftp_conn = mocker.MagicMock()
+        test_instance.sftp_conn.listdir.return_value = ['filea', 'dirb']
+
+        assert test_instance.list_files('remote/path') == ['filea', 'dirb']
+
+        test_instance.sftp_conn.listdir.assert_called_once_with('remote/path')
+
+    def test_list_files_error(self, test_instance, mocker):
+        test_instance.ssh_client = mocker.MagicMock()
+        test_instance.sftp_conn = mocker.MagicMock()
+        test_instance.sftp_conn.listdir.side_effect = IOError('test error')
+
+        with pytest.raises(SftpClientError):
+            test_instance.list_files('remote/path')
+
+        test_instance.sftp_conn.listdir.assert_called_once_with('remote/path')
+        test_instance.sftp_conn.close.assert_called_once()
+        test_instance.ssh_client.close.assert_called_once()
+
     def test_close_connection(self, test_instance, mocker):
         test_instance.sftp_conn = mocker.MagicMock()
         test_instance.ssh_client = mocker.MagicMock()
