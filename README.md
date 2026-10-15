@@ -8,6 +8,7 @@ This package contains common Python utility classes and functions.
 * Decrypting values with KMS
 * Encoding and decoding records using a given Avro schema
 * Retrieving secrets from AWS Secrets Manager
+* Submitting jobs to an AWS Batch queue
 * Downloading files from a remote SSH SFTP server
 * Connecting to and querying an Azure SQL database
 * Connecting to and querying a MySQL database
@@ -72,7 +73,7 @@ pip install \
     --platform manylinux2014_x86_64 \
     --target=./package \
     --implementation cp \
-    --python 3.9 \
+    --python 3.13 \
     --only-binary=:all: --upgrade \
     'psycopg[binary]'
 ```

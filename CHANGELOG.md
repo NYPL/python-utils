@@ -1,4 +1,7 @@
 # Changelog
+## v1.13.0 10/15/26
+- Add Batch client
+
 ## v1.12.3 9/18/26
 - Enable S3 client to download arbitrary files as BytesIO streams
 - Enable SFTP client to list available files
