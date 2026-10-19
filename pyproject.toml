@@ -58,7 +58,7 @@ mysql-client = [
 ]
 oauth2-api-client = [
     "nypl_py_utils[log-helper]",
-    "oauthlib==3.3.1",
+    "oauthlib==4.0.0",
     "requests_oauthlib==2.0.0"
 ]
 postgresql-client = [
