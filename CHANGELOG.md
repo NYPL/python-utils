@@ -1,5 +1,5 @@
 # Changelog
-## v1.13.1 10/28/26
+## v1.13.1/2 10/28/26
 - Update dependency versions
 
 ## v1.13.0 10/15/26
